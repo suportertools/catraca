@@ -1,0 +1,2 @@
+- CÓDIGO DE ERRO AGORA ESTÃO EM NOVA TABELA soc_catraca_erro
+- NOVO PARÂMETRO EM configuracao.json (verificacao_de_liberacao) PARA LIBERAR ACESSO PELO SISTEMA
