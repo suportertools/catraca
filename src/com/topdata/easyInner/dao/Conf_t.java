@@ -1,5 +1,6 @@
 package com.topdata.easyInner.dao;
 
+import com.topdata.easyInner.utils.Path;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -37,13 +38,9 @@ public class Conf_t {
     }
 
     public void loadJson() {
-        String path = "";
+        String path = Path.getRealPath();
         try {
-            path = new File(".").getCanonicalPath();
-        } catch (IOException ex) {
-        }
-        try {
-            File file = new File("C:/rtools/catraca/configuracao.json");
+            File file = new File(path + File.separator + "conf" + File.separator + "configuracao.json");
             if (!file.exists()) {
                 return;
             }

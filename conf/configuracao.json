@@ -1,0 +1,8 @@
+{
+    "postgres_ip": "sinecol.ddns.net",
+    "postgres_usuario": "climeira",
+    "postgres_senha": "X_tub4r40#*",
+    "postgres_banco": "ComercioLimeira",
+    "postgres_cliente": "ComercioLimeira",
+    "servidor_monitor": "sindical.rtools.com.br:7078"
+}

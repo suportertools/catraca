@@ -47,8 +47,8 @@ public class Logs {
         SimpleDateFormat out = new SimpleDateFormat("HH:mm:ss");
         Date date = new Date();
         calendar.setTime(date);
-        
-        content = out.format(calendar.getTime()) + " - " + content; 
+
+        content = out.format(calendar.getTime()) + " - " + content;
         try {
             location = location.toLowerCase();
             location = location.replace(" ", "_");
@@ -79,11 +79,10 @@ public class Logs {
         if (path == null) {
             try {
                 //path = new File(".").getCanonicalPath();
-                File fp = new File("C:/Catraca/logs/");
+                File fp = new File(path + File.separator + "logs");
                 if (!fp.exists()) {
-                    fp.mkdir();
+                    fp.mkdirs();
                 }
-                path = fp.getPath()+"/";
             } catch (Exception ex) {
                 ex.getMessage();
             }
