@@ -79,66 +79,129 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
     }
 
     public ActionListener Action_Tray() {
-        ActionListener action_tray = (ActionEvent e) -> {
-            JFrame frame = new JFrame();
-            frame.setTitle("Catraca v5");
 
-            frame.setAutoRequestFocus(true);
-            frame.setLayout(null);
-            frame.setBounds(0, 0, 450, 180);
-            frame.setResizable(false);
+        ActionListener action_tray = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFrame frame = new JFrame();
+                frame.setTitle("Catraca v5");
 
-            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-            frame.setLocation(dim.width / 2 - frame.getSize().width / 2, dim.height / 2 - frame.getSize().height / 2);
+                frame.setAutoRequestFocus(true);
+                frame.setLayout(null);
+                frame.setBounds(0, 0, 450, 180);
+                frame.setResizable(false);
 
-            JButton button_esconder = new JButton("Esconder");
-            button_esconder.addActionListener(Action_Esconder(frame));
-            button_esconder.setBounds(10, 100, 200, 30);
+                Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+                frame.setLocation(dim.width / 2 - frame.getSize().width / 2, dim.height / 2 - frame.getSize().height / 2);
 
-            JButton button_sair = new JButton("Sair do Sistema");
-            button_sair.addActionListener(Action_Sair());
-            button_sair.setBounds(220, 100, 200, 30);
+                JButton button_esconder = new JButton("Esconder");
+                button_esconder.addActionListener(Action_Esconder(frame));
+                button_esconder.setBounds(10, 100, 200, 30);
 
-            lblRelogio.setBounds(10, 10, 500, 50);
-            lblRelogio.setFont(new Font(null, Font.PLAIN, 20));
+                JButton button_sair = new JButton("Sair do Sistema");
+                button_sair.addActionListener(Action_Sair());
+                button_sair.setBounds(220, 100, 200, 30);
 
-            lblStatus.setBounds(10, 50, 500, 50);
-            lblStatus.setFont(new Font(null, Font.PLAIN, 20));
+                lblRelogio.setBounds(10, 10, 500, 50);
+                lblRelogio.setFont(new Font(null, Font.PLAIN, 20));
 
-            frame.add(button_esconder);
-            frame.add(button_sair);
-            frame.add(lblRelogio);
-            frame.add(lblStatus);
+                lblStatus.setBounds(10, 50, 500, 50);
+                lblStatus.setFont(new Font(null, Font.PLAIN, 20));
 
-            addWindowListener(new java.awt.event.WindowAdapter() {
-                @Override
-                public void windowClosing(WindowEvent windowEvent) {
-                    EnviaAtualizacao.inativar_todas_catracas();
-                }
-            });
+                frame.add(button_esconder);
+                frame.add(button_sair);
+                frame.add(lblRelogio);
+                frame.add(lblStatus);
 
-            frame.setVisible(true);
+                addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosing(WindowEvent windowEvent) {
+                        EnviaAtualizacao.inativar_todas_catracas();
+                    }
+                });
 
+                frame.setVisible(true);
+            }
         };
+
         return action_tray;
     }
+    //        ActionListener action_tray = (ActionEvent e) -> {
+    //            JFrame frame = new JFrame();
+    //            frame.setTitle("Catraca v5");
+    //
+    //            frame.setAutoRequestFocus(true);
+    //            frame.setLayout(null);
+    //            frame.setBounds(0, 0, 450, 180);
+    //            frame.setResizable(false);
+    //
+    //            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+    //            frame.setLocation(dim.width / 2 - frame.getSize().width / 2, dim.height / 2 - frame.getSize().height / 2);
+    //
+    //            JButton button_esconder = new JButton("Esconder");
+    //            button_esconder.addActionListener(Action_Esconder(frame));
+    //            button_esconder.setBounds(10, 100, 200, 30);
+    //
+    //            JButton button_sair = new JButton("Sair do Sistema");
+    //            button_sair.addActionListener(Action_Sair());
+    //            button_sair.setBounds(220, 100, 200, 30);
+    //
+    //            lblRelogio.setBounds(10, 10, 500, 50);
+    //            lblRelogio.setFont(new Font(null, Font.PLAIN, 20));
+    //
+    //            lblStatus.setBounds(10, 50, 500, 50);
+    //            lblStatus.setFont(new Font(null, Font.PLAIN, 20));
+    //
+    //            frame.add(button_esconder);
+    //            frame.add(button_sair);
+    //            frame.add(lblRelogio);
+    //            frame.add(lblStatus);
+    //
+    //            addWindowListener(new java.awt.event.WindowAdapter() {
+    //                @Override
+    //                public void windowClosing(WindowEvent windowEvent) {
+    //                    EnviaAtualizacao.inativar_todas_catracas();
+    //                }
+    //            });
+    //
+    //            frame.setVisible(true);
+    //
+    //        };
 
+    // }
     public ActionListener Action_Sair() {
-        ActionListener action_sair = (ActionEvent e) -> {
-            DAO dao = new DAO();
-            String mac = Mac.getInstance();
-            if (dao.getConectado()) {
-                dao.query("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+        ActionListener action_sair = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DAO dao = new DAO();
+                String mac = Mac.getInstance();
+                if (dao.getConectado()) {
+                    dao.query("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+                }
+                System.exit(0);
             }
-            System.exit(0);
         };
+//        ActionListener action_sair = (ActionEvent e) -> {
+//            DAO dao = new DAO();
+//            String mac = Mac.getInstance();
+//            if (dao.getConectado()) {
+//                dao.query("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+//            }
+//            System.exit(0);
+//        };
         return action_sair;
     }
 
-    public ActionListener Action_Esconder(JFrame frame) {
-        ActionListener action_esconder = (ActionEvent e) -> {
-            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+    public ActionListener Action_Esconder(final JFrame frame) {
+        ActionListener action_esconder = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+            }
         };
+//        ActionListener action_esconder = (ActionEvent e) -> {
+//            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+//        };
         return action_esconder;
     }
 

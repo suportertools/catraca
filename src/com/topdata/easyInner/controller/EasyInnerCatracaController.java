@@ -74,7 +74,7 @@ public class EasyInnerCatracaController {
         //MAIS DE UM INNER
         //Define a quantidade de Inners que o sistema terá..
         TotalInners = catraca.getLista_catraca().size();
-        Logs logs = new Logs();
+        final Logs logs = new Logs();
         //Atribui o vetor com os números dos Inners, sempre de 1 a N
         List<Thread> list_thread = new ArrayList();
         for (int i = 0; i < TotalInners; i++) {
@@ -105,16 +105,20 @@ public class EasyInnerCatracaController {
             if (dao.getConectado()) {
                 dao.query("INSERT INTO soc_catraca_monitora (id_catraca, nr_ping, is_ativo) VALUES (" + ct.getId() + ", 0, false);");
             }
-            EasyInnerCatracaControllerThread ei = new EasyInnerCatracaControllerThread(typInnersCadastrados[i]);
-            FutureTask theTask = new FutureTask(() -> {
-                try {
-                    ei.run();
-                } catch (RuntimeException e) {
-                    logs.save(logs.getPath(), "EasyInnerCatracaController->iniciarMaquinaEstados()->FutureTask()->run(): " + e.getMessage());
-                }
-                if (Thread.interrupted()) {
-                    System.err.println("Opa o projeto parou!!");
-                    logs.save(logs.getPath(), "EasyInnerCatracaController->iniciarMaquinaEstados(): " + "Opa o projeto parou!!");
+            final EasyInnerCatracaControllerThread ei = new EasyInnerCatracaControllerThread(typInnersCadastrados[i]);
+            FutureTask theTask = new FutureTask(
+                    new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ei.run();
+                    } catch (RuntimeException e) {
+                        logs.save(logs.getPath(), "EasyInnerCatracaController->iniciarMaquinaEstados()->FutureTask()->run(): " + e.getMessage());
+                    }
+                    if (Thread.interrupted()) {
+                        System.err.println("Opa o projeto parou!!");
+                        logs.save(logs.getPath(), "EasyInnerCatracaController->iniciarMaquinaEstados(): " + "Opa o projeto parou!!");
+                    }
                 }
             }, null);
             try {
