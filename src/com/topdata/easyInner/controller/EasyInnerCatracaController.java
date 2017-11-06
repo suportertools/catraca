@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.topdata.easyInner.controller;
 
 import com.topdata.easyInner.dao.Catraca;
@@ -13,7 +8,9 @@ import com.topdata.easyInner.enumeradores.Enumeradores;
 import com.topdata.easyInner.ui.JFRMainCatraca;
 import static com.topdata.easyInner.ui.JIFEasyInnerOnLine.TotalInners;
 import static com.topdata.easyInner.ui.JIFEasyInnerOnLine.typInnersCadastrados;
-import java.io.IOException;
+import com.topdata.easyInner.utils.Logs;
+import com.topdata.easyInner.utils.Mac;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
@@ -53,6 +50,8 @@ public class EasyInnerCatracaController {
             iniciarMaquinaEstados();
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
+            Logs logs = new Logs();
+            logs.save(logs.getPath(), "EasyInnerCatracaController->run(): " + ex.getMessage());
         }
     }
 
@@ -63,10 +62,11 @@ public class EasyInnerCatracaController {
      */
     private void iniciarMaquinaEstados() throws InterruptedException {
         DAO dao = new DAO();
+        String mac = Mac.getInstance();
         if (dao.getConectado()) {
-            dao.query("DELETE FROM soc_catraca_monitora");
+            dao.query("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
         }
-        
+
         Conf_t conf_t = new Conf_t();
         conf_t.loadJson();
 
@@ -74,7 +74,7 @@ public class EasyInnerCatracaController {
         //MAIS DE UM INNER
         //Define a quantidade de Inners que o sistema terá..
         TotalInners = catraca.getLista_catraca().size();
-
+        Logs logs = new Logs();
         //Atribui o vetor com os números dos Inners, sempre de 1 a N
         List<Thread> list_thread = new ArrayList();
         for (int i = 0; i < TotalInners; i++) {
@@ -100,37 +100,38 @@ public class EasyInnerCatracaController {
             typInnersCadastrados[i].TempoInicialPingOnLine = (int) System.currentTimeMillis();
             typInnersCadastrados[i].EstadoTeclado = Enumeradores.EstadosTeclado.TECLADO_EM_BRANCO;
             typInnersCadastrados[i].ObjectCatraca = ct;
-            
+
             dao = new DAO();
             if (dao.getConectado()) {
                 dao.query("INSERT INTO soc_catraca_monitora (id_catraca, nr_ping, is_ativo) VALUES (" + ct.getId() + ", 0, false);");
             }
-
             EasyInnerCatracaControllerThread ei = new EasyInnerCatracaControllerThread(typInnersCadastrados[i]);
-
             FutureTask theTask = new FutureTask(() -> {
                 try {
                     ei.run();
                 } catch (RuntimeException e) {
-                    e.getMessage();
+                    logs.save(logs.getPath(), "EasyInnerCatracaController->iniciarMaquinaEstados()->FutureTask()->run(): " + e.getMessage());
                 }
                 if (Thread.interrupted()) {
                     System.err.println("Opa o projeto parou!!");
+                    logs.save(logs.getPath(), "EasyInnerCatracaController->iniciarMaquinaEstados(): " + "Opa o projeto parou!!");
                 }
             }, null);
-
-            Thread.sleep(2000);
-            
-            Thread c = new Thread(theTask);
-            c.start();
-            list_thread.add(c);
+            try {
+                Thread.sleep(2000);
+                Thread c = new Thread(theTask);
+                c.start();
+                list_thread.add(c);
+            } catch (Exception e2) {
+                logs.save(logs.getPath(), "EasyInnerCatracaController->iniciarMaquinaEstados()->FutureTask()->run(): " + e2.getMessage());
+            }
         }
-            
+
         Boolean thread_stop = false;
-        while (!thread_stop){
-            for (int i = 0; i < list_thread.size(); i++){
+        while (!thread_stop) {
+            for (int i = 0; i < list_thread.size(); i++) {
                 Thread.sleep(5000);
-                if (!list_thread.get(i).isAlive()){
+                if (!list_thread.get(i).isAlive()) {
                     list_thread.get(i).getStackTrace();
                     System.err.println("Opa, parou de funcionar!");
                     thread_stop = true;

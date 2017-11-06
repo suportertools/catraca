@@ -1,7 +1,11 @@
 package com.topdata.easyInner.ui;
 
 import com.topdata.easyInner.controller.EasyInnerCatracaController;
+import com.topdata.easyInner.dao.DAO;
+import com.topdata.easyInner.utils.Block;
+import com.topdata.easyInner.utils.BlockInterface;
 import com.topdata.easyInner.utils.EnviaAtualizacao;
+import com.topdata.easyInner.utils.Mac;
 import com.topdata.easyInner.utils.Path;
 import java.awt.AWTException;
 import java.awt.Dimension;
@@ -13,6 +17,7 @@ import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.GregorianCalendar;
@@ -20,6 +25,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -42,6 +48,18 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
         disparaRelogio();
 
         criar_SystemTray();
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                DAO dao = new DAO();
+                String mac = Mac.getInstance();
+                if (dao.getConectado()) {
+                    dao.query("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+                }
+                System.exit(0);
+            }
+        });
 
         lblStatus.setText("Projeto em Execução");
     }
@@ -107,6 +125,11 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
 
     public ActionListener Action_Sair() {
         ActionListener action_sair = (ActionEvent e) -> {
+            DAO dao = new DAO();
+            String mac = Mac.getInstance();
+            if (dao.getConectado()) {
+                dao.query("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+            }
             System.exit(0);
         };
         return action_sair;
@@ -120,6 +143,20 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
+        Block.TYPE = "servico_catraca";
+        if (!Block.registerInstance()) {
+            // instance already running.
+            System.out.println("Another instance of this application is already running.  Exiting.");
+            JOptionPane.showMessageDialog(null, "Aplicação já esta em execução");
+            System.exit(0);
+        }
+        Block.setBlockInterface(new BlockInterface() {
+            @Override
+            public void newInstanceCreated() {
+                System.out.println("New instance detected...");
+                // this is where your handler code goes...
+            }
+        });
         EasyInnerCatracaController innerCatracaController = new EasyInnerCatracaController(new JFRMainCatraca());
         innerCatracaController.run();
     }

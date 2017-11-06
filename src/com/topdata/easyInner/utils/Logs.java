@@ -20,7 +20,7 @@ public class Logs {
             String logDir = getPath();
             if (!new File(logDir).exists()) {
                 File f = new File(logDir);
-                f.mkdir();
+                f.mkdirs();
             }
             String day = (DataHoje.data()).substring(0, 2);
             String month = (DataHoje.data()).substring(3, 5);

@@ -1,19 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.topdata.easyInner.dao;
 
+import com.topdata.easyInner.utils.Mac;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author Claudemir Rtools
- */
 public class Catraca {
 
     private Integer id;
@@ -36,9 +28,10 @@ public class Catraca {
     private Boolean verificacao_de_liberacao;
 
     private List<Catraca> lista_catraca;
-    
+
     private String cliente;
     private String IP;
+    private String mac;
 
     public Catraca() {
         this.id = -1;
@@ -57,12 +50,13 @@ public class Catraca {
         this.verificacao_de_liberacao = false;
 
         this.lista_catraca = load_lista_catraca();
-        
+
         this.cliente = "";
         this.IP = "";
+        this.mac = ""; // MAC DO SERVIDOR
     }
 
-    public Catraca(Integer id, Integer numero, Integer porta, Integer quantidade_digitos, Boolean bloquear_sem_foto, Integer tipo_giro_catraca, String lado_giro_catraca, Integer departamento, String servidor_foto, Boolean servidor_beep, Boolean biometrico, Boolean leitor_biometrico_externo, Boolean grava_frequencia_catraca, Boolean verificacao_de_biometria, Boolean verificacao_de_liberacao, String cliente, String IP) {
+    public Catraca(Integer id, Integer numero, Integer porta, Integer quantidade_digitos, Boolean bloquear_sem_foto, Integer tipo_giro_catraca, String lado_giro_catraca, Integer departamento, String servidor_foto, Boolean servidor_beep, Boolean biometrico, Boolean leitor_biometrico_externo, Boolean grava_frequencia_catraca, Boolean verificacao_de_biometria, Boolean verificacao_de_liberacao, String cliente, String IP, String mac) {
         this.id = id;
         this.numero = numero;
         this.porta = porta;
@@ -80,14 +74,16 @@ public class Catraca {
         this.verificacao_de_liberacao = verificacao_de_liberacao;
         this.cliente = cliente;
         this.IP = IP;
+        this.mac = mac;
     }
 
     public final List<Catraca> load_lista_catraca() {
         DAO dao = new DAO();
+        String macString = Mac.getInstance();
         try {
             List<Catraca> list = new ArrayList();
 
-            ResultSet rs = dao.query("SELECT * FROM soc_catraca WHERE is_ativo = true ORDER BY nr_numero");
+            ResultSet rs = dao.query("SELECT * FROM soc_catraca WHERE is_ativo = true AND ds_mac = '" + macString + "' ORDER BY nr_numero");
 
             while (rs.next()) {
                 list.add(
@@ -108,7 +104,8 @@ public class Catraca {
                                 rs.getBoolean("is_verifica_biometria"),
                                 rs.getBoolean("is_verifica_liberacao"),
                                 "",
-                                rs.getString("ds_ip")
+                                rs.getString("ds_ip"),
+                                rs.getString("ds_mac")
                         )
                 );
             }
@@ -271,4 +268,13 @@ public class Catraca {
     public void setIP(String IP) {
         this.IP = IP;
     }
+
+    public String getMac() {
+        return mac;
+    }
+
+    public void setMac(String mac) {
+        this.mac = mac;
+    }
+
 }

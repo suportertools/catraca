@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.topdata.easyInner.utils;
 
 import com.topdata.easyInner.dao.Conf_t;
@@ -18,10 +13,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
 
-/**
- *
- * @author Claudemir Rtools
- */
 public class EnviaAtualizacao {
 
     public static RetornoJson webservice(Integer id_pessoa, Inner inner) {
@@ -417,9 +408,9 @@ public class EnviaAtualizacao {
     public static void enviarAtualizacaoTelaCatraca(Inner inner) {
         Conf_t conf_t = new Conf_t();
         conf_t.loadJson();
-
         try {
-            URL url = new URL("http://" + conf_t.getServidor_monitor() + "/monitorCatraca/envia_atualizacao.xhtml?cliente=" + inner.ObjectCatraca.getCliente() + "&catraca=" + inner.ObjectCatraca.getNumero());
+            String mac = Mac.getInstance().replace("-", "_");
+            URL url = new URL("http://" + conf_t.getServidor_monitor() + "/monitorCatraca/envia_atualizacao.xhtml?cliente=" + inner.ObjectCatraca.getCliente() + "&catraca=" + inner.ObjectCatraca.getNumero() + "&mac=" + mac);
             Charset charset = Charset.forName("UTF8");
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();

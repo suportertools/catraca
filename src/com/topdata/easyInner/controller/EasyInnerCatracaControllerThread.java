@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.topdata.easyInner.controller;
 
 import com.topdata.EasyInner;
@@ -25,10 +20,6 @@ import java.util.List;
 import java.util.Random;
 import javax.sound.sampled.LineUnavailableException;
 
-/**
- *
- * @author Claudemir Rtools
- */
 public class EasyInnerCatracaControllerThread {
 
     private Inner inner;
@@ -58,123 +49,128 @@ public class EasyInnerCatracaControllerThread {
      *
      */
     public void run() {
-        easy_inner_thread = new EasyInner();
-        //Fecha qualquer conexão que estivesse aberta..
-        easy_inner_thread.FecharPortaComunicacao();
-        //Define o tipo de conexão conforme o selecionado no combo (serial, TCP porta Variavel, TCP Porta Fixa..etc)
-        easy_inner_thread.DefinirTipoConexao(1);
+        try {
+            // System.loadLibrary("EasyInner");
+            easy_inner_thread = new EasyInner();
+            //Fecha qualquer conexão que estivesse aberta..
+            easy_inner_thread.FecharPortaComunicacao();
+            //Define o tipo de conexão conforme o selecionado no combo (serial, TCP porta Variavel, TCP Porta Fixa..etc)
+            easy_inner_thread.DefinirTipoConexao(1);
 
-        //Abre a porta de Comunicação com os Inners..
-        int Ret = easy_inner_thread.AbrirPortaComunicacao(inner.ObjectCatraca.getPorta()); // PORTA PADRÃO
-        
-        if (Ret != Enumeradores.RET_COMANDO_OK) {
-            return;
-        }
+            //Abre a porta de Comunicação com os Inners..
+            int Ret = easy_inner_thread.AbrirPortaComunicacao(inner.ObjectCatraca.getPorta()); // PORTA PADRÃO
 
-        //Enquanto Parar = false prosseguir a maquina...
-        while (!Parar) {
-            //Verifica o Estado do Inner Atual..
-            switch (inner.EstadoAtual) {
-                case ESTADO_CONECTAR:
-                    PASSO_ESTADO_CONECTAR();
-                    break;
-
-                case ESTADO_ENVIAR_CFG_OFFLINE:
-                    PASSO_ESTADO_ENVIAR_CFG_OFFLINE();
-                    break;
-
-                case ESTADO_COLETAR_BILHETES:
-                    PASSO_ESTADO_COLETAR_BILHETES();
-                    break;
-
-                case ESTADO_ENVIAR_CFG_ONLINE:
-                    PASSO_ESTADO_ENVIAR_CFG_ONLINE();
-                    break;
-
-                case ESTADO_ENVIAR_DATA_HORA:
-                    PASSO_ESTADO_ENVIAR_DATA_HORA();
-                    break;
-
-                case ESTADO_ENVIAR_MSG_PADRAO:
-                    PASSO_ENVIAR_MENSAGEM_PADRAO();
-                    break;
-
-                case ESTADO_CONFIGURAR_ENTRADAS_ONLINE:
-                    PASSO_ESTADO_CONFIGURAR_ENTRADAS_ONLINE();
-                    break;
-
-                case ESTADO_POLLING:
-                    PASSO_ESTADO_POLLING();
-                    break;
-
-                case ESTADO_LIBERAR_CATRACA:
-                    PASSO_LIBERA_GIRO_CATRACA();
-                    break;
-
-                case ESTADO_MONITORA_GIRO_CATRACA:
-                    PASSO_MONITORA_GIRO_CATRACA();
-                    break;
-
-                case PING_ONLINE:
-                    PASSO_ESTADO_ENVIA_PING_ONLINE();
-                    break;
-
-                case ESTADO_RECONECTAR:
-                    PASSO_ESTADO_RECONECTAR();
-                    break;
-
-                case AGUARDA_TEMPO_MENSAGEM:
-                    PASSO_AGUARDA_TEMPO_MENSAGEM();
-                    break;
-
-                case ESTADO_DEFINICAO_TECLADO:
-                    PASSO_ESTADO_DEFINICAO_TECLADO();
-                    break;
-
-                case ESTADO_AGUARDA_DEFINICAO_TECLADO:
-                    PASSO_ESTADO_AGUARDA_DEFINICAO_TECLADO();
-                    break;
-
-                case ESTADO_ENVIA_MSG_URNA:
-                    PASSO_ESTADO_ENVIA_MSG_URNA();
-                    break;
-
-                case ESTADO_MONITORA_URNA:
-                    PASSO_ESTADO_MONITORA_URNA();
-                    break;
-
-                case ACIONAR_RELE:
-                    ACIONAR_RELE();
-                    break;
-
-                case ESTADO_ENVIAR_CONFIGMUD_ONLINE_OFFLINE:
-                    PASSO_ESTADO_ENVIAR_CONFIGMUD_ONLINE_OFFLINE();
-                    break;
-
-                case ESTADO_ENVIAR_MENSAGEM:
-                    PASSO_ESTADO_ENVIAR_MSG_OFFLINE();
-                    break;
-
-                case ESTADO_ENVIAR_HORARIOS:
-                    PASSO_ESTADO_ENVIAR_HORARIOS();
-                    break;
-
-                case ESTADO_ENVIAR_MENSAGEM_ACESSO_NEGADO:
-                    PASSO_ENVIAR_MENSAGEM_ACESSO_NEGADO();
-                    break;
-
-                case ESTADO_ENVIAR_USUARIOS_LISTAS:
-                    PASSO_ESTADO_ENVIAR_USUARIOS_LISTAS();
-                    break;
+            if (Ret != Enumeradores.RET_COMANDO_OK) {
+                return;
             }
 
-            if (inner.CntDoEvents++ > 10) {
-                inner.CntDoEvents = 0;
-            }
-        }
+            //Enquanto Parar = false prosseguir a maquina...
+            while (!Parar) {
+                //Verifica o Estado do Inner Atual..
+                switch (inner.EstadoAtual) {
+                    case ESTADO_CONECTAR:
+                        PASSO_ESTADO_CONECTAR();
+                        break;
 
-        //Fecha a porta de Comunicação quando sai da maquina de estados..
-        easy_inner_thread.FecharPortaComunicacao();
+                    case ESTADO_ENVIAR_CFG_OFFLINE:
+                        PASSO_ESTADO_ENVIAR_CFG_OFFLINE();
+                        break;
+
+                    case ESTADO_COLETAR_BILHETES:
+                        PASSO_ESTADO_COLETAR_BILHETES();
+                        break;
+
+                    case ESTADO_ENVIAR_CFG_ONLINE:
+                        PASSO_ESTADO_ENVIAR_CFG_ONLINE();
+                        break;
+
+                    case ESTADO_ENVIAR_DATA_HORA:
+                        PASSO_ESTADO_ENVIAR_DATA_HORA();
+                        break;
+
+                    case ESTADO_ENVIAR_MSG_PADRAO:
+                        PASSO_ENVIAR_MENSAGEM_PADRAO();
+                        break;
+
+                    case ESTADO_CONFIGURAR_ENTRADAS_ONLINE:
+                        PASSO_ESTADO_CONFIGURAR_ENTRADAS_ONLINE();
+                        break;
+
+                    case ESTADO_POLLING:
+                        PASSO_ESTADO_POLLING();
+                        break;
+
+                    case ESTADO_LIBERAR_CATRACA:
+                        PASSO_LIBERA_GIRO_CATRACA();
+                        break;
+
+                    case ESTADO_MONITORA_GIRO_CATRACA:
+                        PASSO_MONITORA_GIRO_CATRACA();
+                        break;
+
+                    case PING_ONLINE:
+                        PASSO_ESTADO_ENVIA_PING_ONLINE();
+                        break;
+
+                    case ESTADO_RECONECTAR:
+                        PASSO_ESTADO_RECONECTAR();
+                        break;
+
+                    case AGUARDA_TEMPO_MENSAGEM:
+                        PASSO_AGUARDA_TEMPO_MENSAGEM();
+                        break;
+
+                    case ESTADO_DEFINICAO_TECLADO:
+                        PASSO_ESTADO_DEFINICAO_TECLADO();
+                        break;
+
+                    case ESTADO_AGUARDA_DEFINICAO_TECLADO:
+                        PASSO_ESTADO_AGUARDA_DEFINICAO_TECLADO();
+                        break;
+
+                    case ESTADO_ENVIA_MSG_URNA:
+                        PASSO_ESTADO_ENVIA_MSG_URNA();
+                        break;
+
+                    case ESTADO_MONITORA_URNA:
+                        PASSO_ESTADO_MONITORA_URNA();
+                        break;
+
+                    case ACIONAR_RELE:
+                        ACIONAR_RELE();
+                        break;
+
+                    case ESTADO_ENVIAR_CONFIGMUD_ONLINE_OFFLINE:
+                        PASSO_ESTADO_ENVIAR_CONFIGMUD_ONLINE_OFFLINE();
+                        break;
+
+                    case ESTADO_ENVIAR_MENSAGEM:
+                        PASSO_ESTADO_ENVIAR_MSG_OFFLINE();
+                        break;
+
+                    case ESTADO_ENVIAR_HORARIOS:
+                        PASSO_ESTADO_ENVIAR_HORARIOS();
+                        break;
+
+                    case ESTADO_ENVIAR_MENSAGEM_ACESSO_NEGADO:
+                        PASSO_ENVIAR_MENSAGEM_ACESSO_NEGADO();
+                        break;
+
+                    case ESTADO_ENVIAR_USUARIOS_LISTAS:
+                        PASSO_ESTADO_ENVIAR_USUARIOS_LISTAS();
+                        break;
+                }
+
+                if (inner.CntDoEvents++ > 10) {
+                    inner.CntDoEvents = 0;
+                }
+            }
+
+            //Fecha a porta de Comunicação quando sai da maquina de estados..
+            easy_inner_thread.FecharPortaComunicacao();
+        } catch (Exception e) {
+            e.getMessage();
+        }
     }
 
     /**
@@ -825,7 +821,7 @@ public class EasyInnerCatracaControllerThread {
                 //atualizaMonitoraCatraca(false, numero_inner, easy_inner_thread, "reconectar");
                 //enviarAtualizacaoTelaCatraca(numero_inner);
                 inner.CountRepeatPingOnline = 0;
-                
+
 //                run();
 //
 //                easy_inner_thread = new EasyInner();
@@ -842,7 +838,6 @@ public class EasyInnerCatracaControllerThread {
 //                }
 //                
 //                easy_inner_thread.PingOnLine(inner.Numero); // PORTA PADRÃO
-
             }
 
 //        if (Ret != Enumeradores.RET_COMANDO_OK) {

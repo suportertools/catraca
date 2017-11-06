@@ -28,7 +28,6 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import static com.topdata.easyInner.enumeradores.Enumeradores.*;
-import javax.swing.JProgressBar;
 
 /**
  *
