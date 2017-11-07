@@ -32,6 +32,7 @@ public class Catraca {
     private String cliente;
     private String IP;
     private String mac;
+    private Integer servidor;
 
     public Catraca() {
         this.id = -1;
@@ -54,9 +55,10 @@ public class Catraca {
         this.cliente = "";
         this.IP = "";
         this.mac = ""; // MAC DO SERVIDOR
+        this.servidor = null;
     }
 
-    public Catraca(Integer id, Integer numero, Integer porta, Integer quantidade_digitos, Boolean bloquear_sem_foto, Integer tipo_giro_catraca, String lado_giro_catraca, Integer departamento, String servidor_foto, Boolean servidor_beep, Boolean biometrico, Boolean leitor_biometrico_externo, Boolean grava_frequencia_catraca, Boolean verificacao_de_biometria, Boolean verificacao_de_liberacao, String cliente, String IP, String mac) {
+    public Catraca(Integer id, Integer numero, Integer porta, Integer quantidade_digitos, Boolean bloquear_sem_foto, Integer tipo_giro_catraca, String lado_giro_catraca, Integer departamento, String servidor_foto, Boolean servidor_beep, Boolean biometrico, Boolean leitor_biometrico_externo, Boolean grava_frequencia_catraca, Boolean verificacao_de_biometria, Boolean verificacao_de_liberacao, String cliente, String IP, String mac, Integer servidor) {
         this.id = id;
         this.numero = numero;
         this.porta = porta;
@@ -75,6 +77,7 @@ public class Catraca {
         this.cliente = cliente;
         this.IP = IP;
         this.mac = mac;
+        this.servidor = servidor;
     }
 
     public final List<Catraca> load_lista_catraca() {
@@ -105,7 +108,8 @@ public class Catraca {
                                 rs.getBoolean("is_verifica_liberacao"),
                                 "",
                                 rs.getString("ds_ip"),
-                                rs.getString("ds_mac")
+                                rs.getString("ds_mac"),
+                                rs.getInt("nr_servidor")
                         )
                 );
             }
@@ -275,6 +279,20 @@ public class Catraca {
 
     public void setMac(String mac) {
         this.mac = mac;
+    }
+
+    /**
+     * @return the servidor
+     */
+    public Integer getServidor() {
+        return servidor;
+    }
+
+    /**
+     * @param servidor the servidor to set
+     */
+    public void setServidor(Integer servidor) {
+        this.servidor = servidor;
     }
 
 }

@@ -409,8 +409,7 @@ public class EnviaAtualizacao {
         Conf_t conf_t = new Conf_t();
         conf_t.loadJson();
         try {
-            String mac = Mac.getInstance().replace("-", "_");
-            URL url = new URL("http://" + conf_t.getServidor_monitor() + "/monitorCatraca/envia_atualizacao.xhtml?cliente=" + inner.ObjectCatraca.getCliente() + "&catraca=" + inner.ObjectCatraca.getNumero() + "&mac=" + mac);
+            URL url = new URL("http://" + conf_t.getServidor_monitor() + "/monitorCatraca/envia_atualizacao.xhtml?cliente=" + inner.ObjectCatraca.getCliente() + "&catraca=" + inner.ObjectCatraca.getNumero() + "&servidor=" + inner.ObjectCatraca.getServidor());
             Charset charset = Charset.forName("UTF8");
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();

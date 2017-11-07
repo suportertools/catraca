@@ -55,7 +55,7 @@ public class EasyInnerCatracaControllerThread {
             //Fecha qualquer conexão que estivesse aberta..
             easy_inner_thread.FecharPortaComunicacao();
             //Define o tipo de conexão conforme o selecionado no combo (serial, TCP porta Variavel, TCP Porta Fixa..etc)
-            easy_inner_thread.DefinirTipoConexao(1);
+            easy_inner_thread.DefinirTipoConexao(2);
 
             //Abre a porta de Comunicação com os Inners..
             int Ret = easy_inner_thread.AbrirPortaComunicacao(inner.ObjectCatraca.getPorta()); // PORTA PADRÃO
