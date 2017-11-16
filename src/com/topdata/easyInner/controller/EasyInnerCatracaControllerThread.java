@@ -4,6 +4,7 @@ import com.topdata.EasyInner;
 import com.topdata.easyInner.dao.DAO;
 import com.topdata.easyInner.entity.Inner;
 import com.topdata.easyInner.enumeradores.Enumeradores;
+import com.topdata.easyInner.utils.DataHoje;
 import com.topdata.easyInner.utils.EasyInnerUtils;
 import com.topdata.easyInner.utils.EnviaAtualizacao;
 import com.topdata.easyInner.utils.RetornoJson;
@@ -35,6 +36,9 @@ public class EasyInnerCatracaControllerThread {
 
     private Boolean Parar = false;
 
+    private boolean fechar_portas = true;
+    
+
     public EasyInnerCatracaControllerThread(Inner inner) {
         this.inner = inner;
     }
@@ -50,22 +54,27 @@ public class EasyInnerCatracaControllerThread {
      */
     public void run() {
         try {
-            // System.loadLibrary("EasyInner");
             easy_inner_thread = new EasyInner();
             //Fecha qualquer conexão que estivesse aberta..
-            easy_inner_thread.FecharPortaComunicacao();
+            if (fechar_portas){
+                easy_inner_thread.FecharPortaComunicacao();
+                fechar_portas = false;
+            }
             //Define o tipo de conexão conforme o selecionado no combo (serial, TCP porta Variavel, TCP Porta Fixa..etc)
-            easy_inner_thread.DefinirTipoConexao(2);
-
-            //Abre a porta de Comunicação com os Inners..
-            int Ret = easy_inner_thread.AbrirPortaComunicacao(inner.ObjectCatraca.getPorta()); // PORTA PADRÃO
+            int Ret = easy_inner_thread.DefinirTipoConexao(1);
 
             if (Ret != Enumeradores.RET_COMANDO_OK) {
                 return;
             }
 
+            //Abre a porta de Comunicação com os Inners..
+            Ret = easy_inner_thread.AbrirPortaComunicacao(inner.ObjectCatraca.getPorta()); // PORTA PADRÃO
+            if (Ret != Enumeradores.RET_COMANDO_OK) {
+                return;
+            }
+
             //Enquanto Parar = false prosseguir a maquina...
-            while (!Parar) {
+            while (!getParar()) {
                 //Verifica o Estado do Inner Atual..
                 switch (inner.EstadoAtual) {
                     case ESTADO_CONECTAR:
@@ -200,10 +209,11 @@ public class EasyInnerCatracaControllerThread {
 
             long IniConexao = System.currentTimeMillis();
             //Realiza loop enquanto o tempo fim for menor que o tempo atual, e o comando retornado diferente de OK.
-            do {
+            if (!EnviaAtualizacao.isCaiu_conexao()) {
                 EnviaAtualizacao.status(inner.ObjectCatraca.getId(), false, "Conectando");
                 EnviaAtualizacao.enviarAtualizacaoTelaCatraca(inner);
-
+            }
+            do {
                 tempo = System.currentTimeMillis() - IniConexao;
                 //Tenta abrir a conexão 
                 Thread.sleep(101);
@@ -264,9 +274,50 @@ public class EasyInnerCatracaControllerThread {
      */
     private void PASSO_ESTADO_ENVIAR_CFG_OFFLINE() {
         try {
+            // VERIFICA SE JÁ TEM UMA THREAD PARA PING NA CATRACA
+            if (!inner.PingOnline) {
+                // PARA MANTER O PING NA CATRACA MESMO QUE UMA QUERY OU PROCESSO DEMORE PARA RESPONDER, ASSIM DESCONECTANDO A MESMA
+                Runnable myRunnable = new Runnable() {
+                    public void run() {
+                        System.out.println("Runnable running");
+
+                        inner.PingOnline = true;
+
+                        int tentativas = 0;
+                        while (inner.PingOnline) {
+                            try {
+                                Thread.sleep(5000);
+
+                                int retorno = easy_inner_thread.PingOnLine(inner.Numero);
+
+                                EnviaAtualizacao.ping(inner.Numero);
+
+                                if (retorno == Enumeradores.RET_COMANDO_OK) {
+                                    //System.out.println(DataHoje.hora() + ": PING CATRACA 0" + inner.Numero);
+                                    tentativas = 0;
+                                } else {
+                                    System.out.println(DataHoje.hora() + ": PING CATRACA 0" + inner.Numero + " >>> FALHOU");
+                                    tentativas++;
+                                }
+
+                                if (tentativas >= 5) {
+                                    inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_RECONECTAR;
+                                    tentativas = 0;
+                                }
+                            } catch (InterruptedException ex) {
+
+                            }
+                        }
+                    }
+                };
+
+                Thread c = new Thread(myRunnable, "PING: Catraca 0" + inner.ObjectCatraca.getNumero());
+                c.start();
+            }
+            // FIM --------------------------------------------------------------------
+
             //Mensagem Status
             //form.get(0).getLblStatus().setText("Configurações OFF-LINE");
-
             //Preenche os campos de configuração do Inner
             MontaConfiguracaoInner(Enumeradores.MODO_OFF_LINE);
 
@@ -440,8 +491,10 @@ public class EasyInnerCatracaControllerThread {
                 inner.CountTentativasEnvioComando = 0;
                 inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_POLLING;
 
-                EnviaAtualizacao.status(inner.ObjectCatraca.getId(), true, "Ativa");
-                EnviaAtualizacao.enviarAtualizacaoTelaCatraca(inner);
+                if (!EnviaAtualizacao.isCaiu_conexao()) {
+                    EnviaAtualizacao.status(inner.ObjectCatraca.getId(), true, "Ativa");
+                    EnviaAtualizacao.enviarAtualizacaoTelaCatraca(inner);
+                }
 
                 if (inner.Catraca) {
 //                    jBtnEntrada.setText("Entrada");
@@ -562,7 +615,6 @@ public class EasyInnerCatracaControllerThread {
                     inner.CountTentativasEnvioComando = 0;
                     inner.TempoInicialPingOnLine = (int) System.currentTimeMillis();
                     inner.EstadoAtual = Enumeradores.EstadosInner.PING_ONLINE;
-                    EnviaAtualizacao.ping(inner.Numero);
                 }
             }
         } catch (SQLException | NumberFormatException ex) {
@@ -701,19 +753,19 @@ public class EasyInnerCatracaControllerThread {
                         switch (json.getVia()) {
                             case 99:
                                 if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
-                                    new DAO().query("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_sis_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                                    new DAO().query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_sis_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
                                 }
-                                new DAO().query("UPDATE conv_movimento SET is_ativo = false, dt_entrada = CURRENT_DATE WHERE id = " + json.getNr_pessoa() + " AND is_ativo = true;");
+                                new DAO().query_execute("UPDATE conv_movimento SET is_ativo = false, dt_entrada = CURRENT_DATE WHERE id = " + json.getNr_pessoa() + " AND is_ativo = true;");
                                 break;
                             default:
                                 if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
-                                    new DAO().query("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                                    new DAO().query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
                                 }
                                 break;
                         }
                     } else {
                         if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
-                            new DAO().query("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                            new DAO().query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
                         }
                     }
 
@@ -796,8 +848,6 @@ public class EasyInnerCatracaControllerThread {
             IniConexao = System.currentTimeMillis();
             //Realiza loop enquanto o tempo fim for menor que o tempo atual, e o comando retornado diferente de OK.
             do {
-                EnviaAtualizacao.status(inner.ObjectCatraca.getId(), false, "Reconectando");
-                EnviaAtualizacao.enviarAtualizacaoTelaCatraca(inner);
 
                 tempo = System.currentTimeMillis() - IniConexao;
                 Thread.sleep(101);
@@ -813,36 +863,29 @@ public class EasyInnerCatracaControllerThread {
                 //logs.save("status_catraca", "CATRACA ONLINE");
             } else {
                 //caso ele não consiga, tentará enviar três vezes, se não conseguir volta para o passo Reconectar
-                if (inner.CountTentativasEnvioComando >= 10) {
-                    //inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_RECONECTAR;
-                    inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_CONECTAR;
+                if (inner.CountTentativasEnvioComando >= 20) {
+                    inner.CountTentativasEnvioComando = 0;
+                    inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_RECONECTAR;
+//                    inner.ObjectCatraca.setAtualizar(true);
+                    //Parar = true;
+                    DAO daox = new DAO();
+                    if (daox.getConectado()) {
+                        daox.query_execute("UPDATE soc_catraca_monitora SET is_atualizar = TRUE WHERE id_catraca = " + inner.ObjectCatraca.getId());
+                        System.out.println("Sistema Reiniciou sozinho");
+                    }
                 }
                 inner.CountTentativasEnvioComando++;
                 //atualizaMonitoraCatraca(false, numero_inner, easy_inner_thread, "reconectar");
                 //enviarAtualizacaoTelaCatraca(numero_inner);
                 inner.CountRepeatPingOnline = 0;
 
-//                run();
-//
-//                easy_inner_thread = new EasyInner();
-//                //Fecha qualquer conexão que estivesse aberta..
-//                easy_inner_thread.FecharPortaComunicacao();
-//                //Define o tipo de conexão conforme o selecionado no combo (serial, TCP porta Variavel, TCP Porta Fixa..etc)
-//                easy_inner_thread.DefinirTipoConexao(2);
-//
-//                //Abre a porta de Comunicação com os Inners..
-//                Ret = easy_inner_thread.AbrirPortaComunicacao(inner.ObjectCatraca.getPorta()); // PORTA PADRÃO
-//
-//                if (Ret != Enumeradores.RET_COMANDO_OK) {
-//                    return;
-//                }
-//                
-//                easy_inner_thread.PingOnLine(inner.Numero); // PORTA PADRÃO
             }
 
-//        if (Ret != Enumeradores.RET_COMANDO_OK) {
-//            return;
-//        }
+            if (!EnviaAtualizacao.isCaiu_conexao()) {
+                EnviaAtualizacao.status(inner.ObjectCatraca.getId(), false, "Reconectando");
+                EnviaAtualizacao.enviarAtualizacaoTelaCatraca(inner);
+            }
+
         } catch (InterruptedException ex) {
             //System.out.println("Passo Reconectar :  " + ex);
             System.out.println("Exception 13: " + ex.getMessage());
@@ -2642,4 +2685,13 @@ public class EasyInnerCatracaControllerThread {
             this.foto = foto;
         }
     }
+
+    public Boolean getParar() {
+        return Parar;
+    }
+
+    public void setParar(Boolean Parar) {
+        this.Parar = Parar;
+    }
+
 }

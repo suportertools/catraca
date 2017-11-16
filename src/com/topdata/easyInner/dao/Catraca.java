@@ -1,11 +1,5 @@
 package com.topdata.easyInner.dao;
 
-import com.topdata.easyInner.utils.Mac;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 public class Catraca {
 
     private Integer id;
@@ -19,20 +13,20 @@ public class Catraca {
     private String lado_giro_catraca;
     private Integer departamento;
     private String servidor_foto;
+
     private Boolean servidor_beep;
     private Boolean biometrico;
-
     private Boolean leitor_biometrico_externo;
     private Boolean grava_frequencia_catraca;
     private Boolean verificacao_de_biometria;
     private Boolean verificacao_de_liberacao;
 
-    private List<Catraca> lista_catraca;
-
     private String cliente;
     private String IP;
     private String mac;
     private Integer servidor;
+    
+    private Boolean atualizar;
 
     public Catraca() {
         this.id = -1;
@@ -49,16 +43,14 @@ public class Catraca {
         this.grava_frequencia_catraca = false;
         this.verificacao_de_biometria = false;
         this.verificacao_de_liberacao = false;
-
-        this.lista_catraca = load_lista_catraca();
-
         this.cliente = "";
         this.IP = "";
         this.mac = ""; // MAC DO SERVIDOR
         this.servidor = null;
+        this.atualizar = true;
     }
 
-    public Catraca(Integer id, Integer numero, Integer porta, Integer quantidade_digitos, Boolean bloquear_sem_foto, Integer tipo_giro_catraca, String lado_giro_catraca, Integer departamento, String servidor_foto, Boolean servidor_beep, Boolean biometrico, Boolean leitor_biometrico_externo, Boolean grava_frequencia_catraca, Boolean verificacao_de_biometria, Boolean verificacao_de_liberacao, String cliente, String IP, String mac, Integer servidor) {
+    public Catraca(Integer id, Integer numero, Integer porta, Integer quantidade_digitos, Boolean bloquear_sem_foto, Integer tipo_giro_catraca, String lado_giro_catraca, Integer departamento, String servidor_foto, Boolean servidor_beep, Boolean biometrico, Boolean leitor_biometrico_externo, Boolean grava_frequencia_catraca, Boolean verificacao_de_biometria, Boolean verificacao_de_liberacao, String cliente, String IP, String mac, Integer servidor, Boolean atualizar) {
         this.id = id;
         this.numero = numero;
         this.porta = porta;
@@ -78,56 +70,17 @@ public class Catraca {
         this.IP = IP;
         this.mac = mac;
         this.servidor = servidor;
+        this.atualizar = atualizar;
     }
 
-    public final List<Catraca> load_lista_catraca() {
-        DAO dao = new DAO();
-        String macString = Mac.getInstance();
-        try {
-            List<Catraca> list = new ArrayList();
-
-            ResultSet rs = dao.query("SELECT * FROM soc_catraca WHERE is_ativo = true AND ds_mac = '" + macString + "' ORDER BY nr_numero");
-
-            while (rs.next()) {
-                list.add(
-                        new Catraca(
-                                rs.getInt("id"),
-                                rs.getInt("nr_numero"),
-                                rs.getInt("nr_porta"),
-                                rs.getInt("nr_quantidade_digitos"),
-                                rs.getBoolean("is_bloquear_sem_foto"),
-                                rs.getInt("nr_tipo_giro_catraca"),
-                                rs.getString("ds_lado_giro_catraca"),
-                                rs.getInt("id_departamento"),
-                                rs.getString("ds_servidor_foto"),
-                                rs.getBoolean("is_servidor_beep"),
-                                rs.getBoolean("is_biometrico"),
-                                rs.getBoolean("is_leitor_biometrico_externo"),
-                                rs.getBoolean("is_grava_frequencia_catraca"),
-                                rs.getBoolean("is_verifica_biometria"),
-                                rs.getBoolean("is_verifica_liberacao"),
-                                "",
-                                rs.getString("ds_ip"),
-                                rs.getString("ds_mac"),
-                                rs.getInt("nr_servidor")
-                        )
-                );
-            }
-            return list;
-        } catch (SQLException e) {
-            e.getMessage();
-        }
-        return new ArrayList();
-    }
-
-    public Catraca get_catraca(Integer numero) {
-        for (Catraca c : lista_catraca) {
-            if (c.getNumero().equals(numero)) {
-                return c;
-            }
-        }
-        return null;
-    }
+//    public Catraca get_catraca(Integer numero) {
+//        for (Catraca c : lista_catraca) {
+//            if (c.getNumero().equals(numero)) {
+//                return c;
+//            }
+//        }
+//        return null;
+//    }
 
     public Integer getId() {
         return id;
@@ -183,6 +136,14 @@ public class Catraca {
 
     public void setLado_giro_catraca(String lado_giro_catraca) {
         this.lado_giro_catraca = lado_giro_catraca;
+    }
+
+    public Boolean getAtualizar() {
+        return atualizar;
+    }
+
+    public void setAtualizar(Boolean atualizar) {
+        this.atualizar = atualizar;
     }
 
     public Integer getDepartamento() {
@@ -249,13 +210,13 @@ public class Catraca {
         this.verificacao_de_liberacao = verificacao_de_liberacao;
     }
 
-    public List<Catraca> getLista_catraca() {
-        return lista_catraca;
-    }
-
-    public void setLista_catraca(List<Catraca> lista_catraca) {
-        this.lista_catraca = lista_catraca;
-    }
+//    public List<Catraca> getLista_catraca() {
+//        return lista_catraca;
+//    }
+//
+//    public void setLista_catraca(List<Catraca> lista_catraca) {
+//        this.lista_catraca = lista_catraca;
+//    }
 
     public String getCliente() {
         return cliente;

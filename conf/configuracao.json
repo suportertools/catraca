@@ -4,5 +4,5 @@
     "postgres_senha": "X_tub4r40#*",
     "postgres_banco": "ComercioLimeira",
     "postgres_cliente": "ComercioLimeira",
-    "servidor_monitor": "192.168.1.108:8084"
+    "servidor_monitor": "sindical.rtools.com.br:7078"
 }

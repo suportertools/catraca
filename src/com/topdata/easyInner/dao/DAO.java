@@ -11,11 +11,11 @@ public class DAO {
     private Statement statement;
     private Boolean conectado;
     private final Conf_t conf_t = new Conf_t();
-    
+
     public DAO() {
         try {
             conf_t.loadJson();
-            
+
             String conexao = "jdbc:postgresql://" + conf_t.getPostgres_ip() + ":5432/" + conf_t.getPostgres_banco();
             Class.forName("org.postgresql.Driver");
             Connection con = DriverManager.getConnection(conexao, conf_t.getPostgres_usuario(), conf_t.getPostgres_senha());
@@ -28,30 +28,29 @@ public class DAO {
         }
     }
 
-    public void disconect() {
-        try {
-            getStatement().close();
-        } catch (SQLException ex) {
-            ex.getMessage();
-        }
-    }
-
+//    public void disconect() {
+//        try {
+//            getStatement().close();
+//        } catch (SQLException ex) {
+//            ex.getMessage();
+//        }
+//    }
     public ResultSet query(String qry) {
         try {
             ResultSet rs = getStatement().executeQuery(qry);
             getStatement().getConnection().close();
             return rs;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.getMessage();
         }
         return null;
     }
-    
+
     public void query_execute(String qry) {
         try {
             Integer x = getStatement().executeUpdate(qry);
             getStatement().getConnection().close();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.getMessage();
         }
     }

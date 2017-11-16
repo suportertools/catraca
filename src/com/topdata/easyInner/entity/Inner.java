@@ -54,4 +54,5 @@ public class Inner {
     public String VersaoBio;
     public static String CaminhoDados;
     public Catraca ObjectCatraca;
+    public Boolean PingOnline;
 }

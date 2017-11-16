@@ -14,7 +14,7 @@ import java.sql.SQLException;
 import java.util.Random;
 
 public class EnviaAtualizacao {
-
+    
     public static RetornoJson webservice(Integer id_pessoa, Inner inner) {
         return webservice(id_pessoa, null, inner);
     }
@@ -47,8 +47,7 @@ public class EnviaAtualizacao {
     private static RetornoJson retorna_pessoa_funcao(Integer nr_pessoa, Inner inner) {
         RetornoJson json = new RetornoJson();
         try {
-            DAO dao = new DAO();
-            if (!dao.getConectado()) {
+            if (isCaiu_conexao()) {
                 return null;
             }
 
@@ -180,12 +179,11 @@ public class EnviaAtualizacao {
         // INDICE FINAL SEMPRE - 1 ex 8 - 1 = 7
         RetornoJson json = new RetornoJson();
         try {
-            DAO dao = new DAO();
-            if (!dao.getConectado()) {
+            if (isCaiu_conexao()){
                 return null;
             }
 
-            ResultSet rs_cartao = dao.query(
+            ResultSet rs_cartao = new DAO().query(
                     "SELECT nr_cartao_posicao_via AS via, \n "
                     + "     nr_cartao_posicao_codigo AS codigo \n "
                     + " FROM conf_social"
@@ -203,9 +201,9 @@ public class EnviaAtualizacao {
 
             ResultSet rs_funcao;
             if (numero_via != 99) {
-                rs_funcao = dao.query("SELECT func_catraca(" + nr_cartao + "," + inner.ObjectCatraca.getDepartamento() + ", 1, " + numero_via + ") AS retorno");
+                rs_funcao = new DAO().query("SELECT func_catraca(" + nr_cartao + "," + inner.ObjectCatraca.getDepartamento() + ", 1, " + numero_via + ") AS retorno");
             } else {
-                rs_funcao = dao.query("SELECT func_catraca(" + nr_cartao + "," + inner.ObjectCatraca.getDepartamento() + ", 3, null) AS retorno");
+                rs_funcao = new DAO().query("SELECT func_catraca(" + nr_cartao + "," + inner.ObjectCatraca.getDepartamento() + ", 3, null) AS retorno");
             }
             rs_funcao.next();
 
@@ -228,14 +226,14 @@ public class EnviaAtualizacao {
                     ResultSet rs_pessoa = null;
 
                     if (numero_via != 99) {
-                        rs_pessoa = dao.query(
+                        rs_pessoa = new DAO().query(
                                 "SELECT s.ds_nome AS nome, \n "
                                 + "     s.ds_foto_perfil AS foto \n "
                                 + "FROM sis_pessoa s \n "
                                 + "WHERE s.id = " + nr_retorno);
 
                     } else {
-                        rs_pessoa = dao.query(
+                        rs_pessoa = new DAO().query(
                                 "SELECT p.ds_nome AS nome, \n "
                                 + "     f.ds_foto AS foto \n "
                                 + "FROM pes_pessoa p \n "
@@ -277,14 +275,14 @@ public class EnviaAtualizacao {
             }
 
             if (nr_retorno < 0) {
-                ResultSet rs_carteirinha = dao.query(
+                ResultSet rs_carteirinha = new DAO().query(
                         "SELECT id_pessoa FROM soc_carteirinha WHERE nr_cartao = " + nr_cartao
                 );
                 rs_carteirinha.next();
 
                 Integer nr_pessoa = rs_carteirinha.getInt("id_pessoa");
 
-                ResultSet rs_pessoa = dao.query(
+                ResultSet rs_pessoa = new DAO().query(
                         "SELECT p.ds_nome AS nome, \n "
                         + "     f.ds_foto AS foto \n "
                         + "FROM pes_pessoa p \n "
@@ -292,7 +290,7 @@ public class EnviaAtualizacao {
                         + "WHERE p.id = " + nr_pessoa);
                 rs_pessoa.next();
 
-                ResultSet rs_erro = dao.query(
+                ResultSet rs_erro = new DAO().query(
                         "  SELECT ce.id AS id, \n "
                         + "       ce.ds_descricao AS descricao_erro \n "
                         + "  FROM soc_catraca_erro ce \n "
@@ -322,11 +320,8 @@ public class EnviaAtualizacao {
         try {
             Random random = new Random();
             Integer random_id = random.nextInt(10000000);
-            DAO dao = new DAO();
-            if (dao.getConectado()) {
-                dao.query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = true WHERE id_catraca = " + catraca_id);
-            } else {
-                System.err.println("Caiu a conexão");
+            if (!isCaiu_conexao()){
+                new DAO().query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = true WHERE id_catraca = " + catraca_id);
             }
         } catch (Exception e) {
             e.getMessage();
@@ -334,14 +329,11 @@ public class EnviaAtualizacao {
     }
 
     public static void status(Integer catraca_id, Boolean ativo, String status) {
-        DAO dao = new DAO();
-        if (dao.getConectado()) {
+        if (!isCaiu_conexao()){
             Random random = new Random();
             Integer random_id = random.nextInt(10000000);
             new DAO().query("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = " + ativo + ", ds_status = '" + status + "' WHERE id_catraca = " + catraca_id);
-        } else {
-            System.err.println("Caiu a conexão");
-        }
+        } 
     }
 
     public static void atualiza_tela(Inner inner) {
@@ -354,9 +346,8 @@ public class EnviaAtualizacao {
 
     private static void atualiza_tela(Inner inner, RetornoJson json, Boolean limpar) {
         if (limpar) {
-            DAO dao = new DAO();
-            if (dao.getConectado()) {
-                dao.query(
+           if (!isCaiu_conexao()){
+                new DAO().query(
                         "UPDATE soc_catraca_monitora \n "
                         + " SET nr_pessoa = null, \n"
                         + "     ds_mensagem = null, \n"
@@ -368,9 +359,8 @@ public class EnviaAtualizacao {
                 );
             }
         } else {
-            DAO dao = new DAO();
-            if (dao.getConectado()) {
-                dao.query(
+            if (!isCaiu_conexao()){
+                new DAO().query(
                         "UPDATE soc_catraca_monitora \n "
                         + " SET nr_pessoa = " + json.getNr_pessoa() + ", \n"
                         + "     ds_nome = '" + json.getNome() + "', \n"
@@ -424,4 +414,9 @@ public class EnviaAtualizacao {
             e.getMessage();
         }
     }
+
+    public static boolean isCaiu_conexao() {
+        return !new DAO().getConectado();
+    }
+
 }

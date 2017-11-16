@@ -112,7 +112,7 @@ public class JFRCadastro extends javax.swing.JFrame {
                     jbSolicitarDigitais.setEnabled(false);
                     textCodigo.setEnabled(false);
                     
-                    catraca.load_lista_catraca();
+                    //catraca.load_lista_catraca();
                     
                     if (!catraca.getBiometrico()) {
                         JOptionPane.showMessageDialog(rootPane, "CATRACA NÃO ESTA CONFIGURADA COM LEITOR BIOMÉTRICO");
