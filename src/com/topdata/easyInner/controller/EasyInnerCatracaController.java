@@ -1,5 +1,6 @@
 package com.topdata.easyInner.controller;
 
+import com.topdata.EasyInner;
 import com.topdata.easyInner.dao.Catraca;
 import com.topdata.easyInner.dao.CatracaDao;
 import com.topdata.easyInner.dao.Conf_t;
@@ -60,7 +61,17 @@ public class EasyInnerCatracaController {
             TimeZone tz = TimeZone.getTimeZone("America/Sao_Paulo");
             TimeZone.setDefault(tz);
 
-            iniciarMaquinaEstados();
+            EasyInner easy_inner_thread = new EasyInner();
+            
+            easy_inner_thread.FecharPortaComunicacao();
+            
+            easy_inner_thread.DefinirTipoConexao(1);
+            
+            // POR SER TCP/IP ESSA CONFIGURAÇÃO É IGNORADA PARA AS DEMAIS PORTAS ex. 3570,3571,3572 ...
+            // OU SEJA, É PRECISO ABRIR A PORTA UMA ÚNICA VEZ, QUE ELE ABRIRÁ AS DEMAIS.
+            int ret = easy_inner_thread.AbrirPortaComunicacao(3570);
+            
+            iniciarMaquinaEstados(easy_inner_thread);
         } catch (InterruptedException ex) {
             System.out.println(ex.getMessage());
             Logs logs = new Logs();
@@ -68,7 +79,7 @@ public class EasyInnerCatracaController {
         }
     }
 
-    private Boolean load_thread_catraca(Catraca catraca, Integer i) throws InterruptedException {
+    private Boolean load_thread_catraca(Catraca catraca, Integer i, EasyInner easy_inner_thread) throws InterruptedException {
 
         DAO dao = new DAO();
         if (dao.getConectado()) {
@@ -96,7 +107,7 @@ public class EasyInnerCatracaController {
         typInnersCadastrados[i].ObjectCatraca = catraca;
         typInnersCadastrados[i].PingOnline = false;
 
-        final EasyInnerCatracaControllerThread ei = new EasyInnerCatracaControllerThread(typInnersCadastrados[i]);
+        final EasyInnerCatracaControllerThread ei = new EasyInnerCatracaControllerThread(typInnersCadastrados[i], easy_inner_thread);
 
         dao = new DAO();
         if (dao.getConectado()) {
@@ -159,7 +170,7 @@ public class EasyInnerCatracaController {
      *
      * @throws InterruptedException
      */
-    private void iniciarMaquinaEstados() {
+    private void iniciarMaquinaEstados(EasyInner easy_inner_thread) {
         TotalInners = lista_catraca.size();
 
         //******************************************************
@@ -176,22 +187,24 @@ public class EasyInnerCatracaController {
                     }
 
                     ResultSet rs = new DAO().query("SELECT is_atualizar FROM soc_catraca_monitora WHERE id_catraca = " + lista_catraca.get(i).getId());
-                    rs.next();
-                    if (rs.getRow() > 0) {
-                        if (rs.getBoolean("is_atualizar")) {
-                            interromperThread(lista_catraca.get(i).getNumero());
-//                            if (!list_thread.isEmpty() && list_thread.size() == lista_catraca.size()) {
-//                                list_thread.get(i).interrupt();
-//                                list_thread.remove(i);
-//                            }
+                    if (rs != null){
+                        rs.next();
+                        if (rs.getRow() > 0) {
+                            if (rs.getBoolean("is_atualizar")) {
+                                interromperThread(lista_catraca.get(i).getNumero());
+    //                            if (!list_thread.isEmpty() && list_thread.size() == lista_catraca.size()) {
+    //                                list_thread.get(i).interrupt();
+    //                                list_thread.remove(i);
+    //                            }
 
-                            load_thread_catraca(lista_catraca.get(i), i);
+                                load_thread_catraca(lista_catraca.get(i), i, easy_inner_thread);
+                            }
+                        } else {
+                            load_thread_catraca(lista_catraca.get(i), i, easy_inner_thread);
+
+                            // DEPOIS ATUALIZAR SINDICAL PARA A ATUALIZAÇÃO SER FEITA PELO BANCO
+                            lista_catraca.get(i).setAtualizar(false);
                         }
-                    } else {
-                        load_thread_catraca(lista_catraca.get(i), i);
-
-                        // DEPOIS ATUALIZAR SINDICAL PARA A ATUALIZAÇÃO SER FEITA PELO BANCO
-                        lista_catraca.get(i).setAtualizar(false);
                     }
                 }
 

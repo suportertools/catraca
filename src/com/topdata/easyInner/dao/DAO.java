@@ -37,9 +37,11 @@ public class DAO {
 //    }
     public ResultSet query(String qry) {
         try {
-            ResultSet rs = getStatement().executeQuery(qry);
-            getStatement().getConnection().close();
-            return rs;
+            if (getStatement() != null){
+                ResultSet rs = getStatement().executeQuery(qry);
+                getStatement().getConnection().close();
+                return rs;
+            }
         } catch (SQLException e) {
             e.getMessage();
         }
@@ -48,8 +50,10 @@ public class DAO {
 
     public void query_execute(String qry) {
         try {
-            Integer x = getStatement().executeUpdate(qry);
-            getStatement().getConnection().close();
+            if (getStatement() != null){
+                Integer x = getStatement().executeUpdate(qry);
+                getStatement().getConnection().close();
+            }
         } catch (SQLException e) {
             e.getMessage();
         }
