@@ -1,6 +1,6 @@
 package com.topdata.easyInner.utils;
 
-import com.topdata.easyInner.dao.Conf_t;
+import com.topdata.easyInner.dao.Conf_Cliente;
 import com.topdata.easyInner.dao.DAO;
 import com.topdata.easyInner.entity.Inner;
 import java.io.BufferedReader;
@@ -396,10 +396,10 @@ public class EnviaAtualizacao {
     }
 
     public static void enviarAtualizacaoTelaCatraca(Inner inner) {
-        Conf_t conf_t = new Conf_t();
-        conf_t.loadJson();
+        Conf_Cliente conf_cliente = new Conf_Cliente();
+        conf_cliente.loadJson();
         try {
-            URL url = new URL("http://" + conf_t.getServidor_monitor() + "/monitorCatraca/envia_atualizacao.xhtml?cliente=" + inner.ObjectCatraca.getCliente() + "&catraca=" + inner.ObjectCatraca.getNumero() + "&servidor=" + inner.ObjectCatraca.getServidor());
+            URL url = new URL("http://" + conf_cliente.getServidor_monitor() + "/monitorCatraca/envia_atualizacao.xhtml?cliente=" + inner.ObjectCatraca.getCliente() + "&catraca=" + inner.ObjectCatraca.getNumero() + "&servidor=" + inner.ObjectCatraca.getServidor());
             Charset charset = Charset.forName("UTF8");
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();

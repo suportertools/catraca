@@ -3,7 +3,7 @@ package com.topdata.easyInner.controller;
 import com.topdata.EasyInner;
 import com.topdata.easyInner.dao.Catraca;
 import com.topdata.easyInner.dao.CatracaDao;
-import com.topdata.easyInner.dao.Conf_t;
+import com.topdata.easyInner.dao.Conf_Cliente;
 import com.topdata.easyInner.dao.DAO;
 import com.topdata.easyInner.entity.Inner;
 import com.topdata.easyInner.enumeradores.Enumeradores;
@@ -25,13 +25,13 @@ public class EasyInnerCatracaController {
     private JFRMainCatraca form = null;
     //private DAOx dao = new DAOx();
     private List<Catraca> lista_catraca = new ArrayList();
-    private final Conf_t conf_t = new Conf_t();
+    private final Conf_Cliente conf_cliente = new Conf_Cliente();
 
-    private List<Thread> list_thread = new ArrayList();
+    private final List<Thread> list_thread = new ArrayList();
 
     public EasyInnerCatracaController(JFRMainCatraca form) {
         this.form = form;
-        this.conf_t.loadJson();
+        this.conf_cliente.loadJson();
     }
 
     public void run() {
@@ -62,15 +62,15 @@ public class EasyInnerCatracaController {
             TimeZone.setDefault(tz);
 
             EasyInner easy_inner_thread = new EasyInner();
-            
+
             easy_inner_thread.FecharPortaComunicacao();
-            
+
             easy_inner_thread.DefinirTipoConexao(1);
-            
+
             // POR SER TCP/IP ESSA CONFIGURAÇÃO É IGNORADA PARA AS DEMAIS PORTAS ex. 3570,3571,3572 ...
             // OU SEJA, É PRECISO ABRIR A PORTA UMA ÚNICA VEZ, QUE ELE ABRIRÁ AS DEMAIS.
             int ret = easy_inner_thread.AbrirPortaComunicacao(3570);
-            
+
             iniciarMaquinaEstados(easy_inner_thread);
         } catch (InterruptedException ex) {
             System.out.println(ex.getMessage());
@@ -129,7 +129,6 @@ public class EasyInnerCatracaController {
                     //logs.save(logs.getPath(), "EasyInnerCatracaController->iniciarMaquinaEstados(): " + "Opa o projeto parou!!");
                 }
 
-
                 //interromperThread(catraca.getNumero());
             }
         }, null);
@@ -143,8 +142,7 @@ public class EasyInnerCatracaController {
             //logs.save(logs.getPath(), "EasyInnerCatracaController->iniciarMaquinaEstados()->FutureTask()->run(): " + e2.getMessage());
         }
 
-        catraca.setCliente(conf_t.getPostgres_cliente());
-
+        catraca.setCliente(conf_cliente.getPostgres_cliente());
         return true;
 
     }
@@ -187,15 +185,15 @@ public class EasyInnerCatracaController {
                     }
 
                     ResultSet rs = new DAO().query("SELECT is_atualizar FROM soc_catraca_monitora WHERE id_catraca = " + lista_catraca.get(i).getId());
-                    if (rs != null){
+                    if (rs != null) {
                         rs.next();
                         if (rs.getRow() > 0) {
                             if (rs.getBoolean("is_atualizar")) {
                                 interromperThread(lista_catraca.get(i).getNumero());
-    //                            if (!list_thread.isEmpty() && list_thread.size() == lista_catraca.size()) {
-    //                                list_thread.get(i).interrupt();
-    //                                list_thread.remove(i);
-    //                            }
+                                //                            if (!list_thread.isEmpty() && list_thread.size() == lista_catraca.size()) {
+                                //                                list_thread.get(i).interrupt();
+                                //                                list_thread.remove(i);
+                                //                            }
 
                                 load_thread_catraca(lista_catraca.get(i), i, easy_inner_thread);
                             }

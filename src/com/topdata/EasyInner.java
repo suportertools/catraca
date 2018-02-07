@@ -17,8 +17,8 @@ package com.topdata;
 public class EasyInner {
 
     static {
-        System.loadLibrary("EasyInner");
-    }
+            System.loadLibrary("EasyInner");
+        }
 
     //<editor-fold defaultstate="collapsed" desc="Constantes de Retorno EasyInner">
     public final int RET_COMANDO_OK = 0;
@@ -63,10 +63,10 @@ public class EasyInner {
      * @return
      */
     public native int ReceberDigitalUsuario(int Inner, byte[] Template, int TamResposta);
-    
+
     /*
     ReceberRespostaRequisicaoBio
-    */
+     */
     public native int ReceberRespostaRequisicaoBio(int Inner, int[] TamResposta);
 
     /**
@@ -673,6 +673,7 @@ public class EasyInner {
      * @return
      */
     public native int LiberarCatracaDoisSentidos(int Inner);
+
     /**/
 
     /**
@@ -685,6 +686,7 @@ public class EasyInner {
      * @return
      */
     public native int LiberarCatracaEntrada(int Inner);
+
     /**/
 
     /**
@@ -697,6 +699,7 @@ public class EasyInner {
      * @return
      */
     public native int LiberarCatracaSaida(int Inner);
+
     /**/
 
     /**
@@ -709,6 +712,7 @@ public class EasyInner {
      * @return
      */
     public native int LiberarCatracaEntradaInvertida(int Inner);
+
     /**/
 
     /**
@@ -721,6 +725,7 @@ public class EasyInner {
      * @return
      */
     public native int LiberarCatracaSaidaInvertida(int Inner);
+
     /**/
 
     /**
@@ -730,6 +735,7 @@ public class EasyInner {
      * @return
      */
     public native int ConfigurarInnerOffLine();
+
     /**/
 
     /**
@@ -749,6 +755,7 @@ public class EasyInner {
      * @return
      */
     public native int DefinirMensagemEntradaOffLine(int ExibirData, String Mensagem);
+
     /**/
 
     /**
@@ -768,6 +775,7 @@ public class EasyInner {
      * @return
      */
     public native int DefinirMensagemSaidaOffLine(int ExibirData, String Mensagem);
+
     /**/
 
     /**
@@ -787,6 +795,7 @@ public class EasyInner {
      * @return
      */
     public native int DefinirMensagemPadraoOffLine(int ExibirData, String Mensagem);
+
     /**/
 
     /**
@@ -800,6 +809,7 @@ public class EasyInner {
      * @return
      */
     public native int EnviarMensagensOffLine(int Inner);
+
     /**/
 
     /**
@@ -862,6 +872,7 @@ public class EasyInner {
      * @return
      */
     public native int DefinirMensagemPadraoMudancaOffLine(int ExibirData, String Mensagem);
+
     /**/
 
     /**
@@ -1430,6 +1441,5 @@ public class EasyInner {
      * @return
      */
     public native long Sleep(long ms);
-    
-    
+
 }

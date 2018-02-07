@@ -10,15 +10,15 @@ public class DAO {
 
     private Statement statement;
     private Boolean conectado;
-    private final Conf_t conf_t = new Conf_t();
+    private final Conf_Cliente conf_cliente = new Conf_Cliente();
 
     public DAO() {
         try {
-            conf_t.loadJson();
+            conf_cliente.loadJson();
 
-            String conexao = "jdbc:postgresql://" + conf_t.getPostgres_ip() + ":5432/" + conf_t.getPostgres_banco();
+            String conexao = "jdbc:postgresql://" + conf_cliente.getPostgres_ip() + ":" + conf_cliente.getPostgres_porta() + "/" + conf_cliente.getPostgres_banco();
             Class.forName("org.postgresql.Driver");
-            Connection con = DriverManager.getConnection(conexao, conf_t.getPostgres_usuario(), conf_t.getPostgres_senha());
+            Connection con = DriverManager.getConnection(conexao, conf_cliente.getPostgres_usuario(), conf_cliente.getPostgres_senha());
 
             statement = con.createStatement();
             conectado = true;
@@ -37,7 +37,7 @@ public class DAO {
 //    }
     public ResultSet query(String qry) {
         try {
-            if (getStatement() != null){
+            if (getStatement() != null) {
                 ResultSet rs = getStatement().executeQuery(qry);
                 getStatement().getConnection().close();
                 return rs;
@@ -50,7 +50,7 @@ public class DAO {
 
     public void query_execute(String qry) {
         try {
-            if (getStatement() != null){
+            if (getStatement() != null) {
                 Integer x = getStatement().executeUpdate(qry);
                 getStatement().getConnection().close();
             }
