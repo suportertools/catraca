@@ -14,7 +14,7 @@ import java.sql.SQLException;
 import java.util.Random;
 
 public class EnviaAtualizacao {
-    
+
     public static RetornoJson webservice(Integer id_pessoa, Inner inner) {
         return webservice(id_pessoa, null, inner);
     }
@@ -179,7 +179,7 @@ public class EnviaAtualizacao {
         // INDICE FINAL SEMPRE - 1 ex 8 - 1 = 7
         RetornoJson json = new RetornoJson();
         try {
-            if (isCaiu_conexao()){
+            if (isCaiu_conexao()) {
                 return null;
             }
 
@@ -320,7 +320,7 @@ public class EnviaAtualizacao {
         try {
             Random random = new Random();
             Integer random_id = random.nextInt(10000000);
-            if (!isCaiu_conexao()){
+            if (!isCaiu_conexao()) {
                 new DAO().query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = true WHERE id_catraca = " + catraca_id);
             }
         } catch (Exception e) {
@@ -329,11 +329,11 @@ public class EnviaAtualizacao {
     }
 
     public static void status(Integer catraca_id, Boolean ativo, String status) {
-        if (!isCaiu_conexao()){
+        if (!isCaiu_conexao()) {
             Random random = new Random();
             Integer random_id = random.nextInt(10000000);
-            new DAO().query("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = " + ativo + ", ds_status = '" + status + "' WHERE id_catraca = " + catraca_id);
-        } 
+            new DAO().query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = " + ativo + ", ds_status = '" + status + "' WHERE id_catraca = " + catraca_id);
+        }
     }
 
     public static void atualiza_tela(Inner inner) {
@@ -346,8 +346,8 @@ public class EnviaAtualizacao {
 
     private static void atualiza_tela(Inner inner, RetornoJson json, Boolean limpar) {
         if (limpar) {
-           if (!isCaiu_conexao()){
-                new DAO().query(
+            if (!isCaiu_conexao()) {
+                new DAO().query_execute(
                         "UPDATE soc_catraca_monitora \n "
                         + " SET nr_pessoa = null, \n"
                         + "     ds_mensagem = null, \n"
@@ -359,8 +359,8 @@ public class EnviaAtualizacao {
                 );
             }
         } else {
-            if (!isCaiu_conexao()){
-                new DAO().query(
+            if (!isCaiu_conexao()) {
+                new DAO().query_execute(
                         "UPDATE soc_catraca_monitora \n "
                         + " SET nr_pessoa = " + json.getNr_pessoa() + ", \n"
                         + "     ds_nome = '" + json.getNome() + "', \n"
@@ -416,7 +416,8 @@ public class EnviaAtualizacao {
     }
 
     public static boolean isCaiu_conexao() {
-        return !new DAO().getConectado();
+        // return !new DAO().getConectado();
+        return !new DAO().isActive();
     }
 
 }

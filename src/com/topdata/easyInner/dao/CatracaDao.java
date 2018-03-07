@@ -15,17 +15,16 @@ import java.util.List;
  *
  * @author Claudemir Rtools
  */
-public class CatracaDao {
+public class CatracaDao extends DAO {
 
     public final List<Catraca> listaCatraca() {
-        DAO dao = new DAO();
 
         String macString = Mac.getInstance();
 
         try {
             List<Catraca> list = new ArrayList();
 
-            ResultSet rs = dao.query(
+            ResultSet rs = query(
                     " SELECT c.* \n "
                     + " FROM soc_catraca c \n "
                     + "WHERE c.is_ativo = TRUE \n "
@@ -67,20 +66,19 @@ public class CatracaDao {
     }
 
     public final Catraca pesquisaCatraca(Integer id_catraca) {
-        DAO dao = new DAO();
 
         String macString = Mac.getInstance();
 
         try {
 
-            ResultSet rs = dao.query(
+            ResultSet rs = query(
                     " SELECT c.* \n "
                     + " FROM soc_catraca c \n "
                     + "WHERE c.is_ativo = TRUE \n "
                     + "  AND c.ds_mac = '" + macString + "' \n "
                     + "  AND id = " + id_catraca
             );
-            
+
             rs.next();
 
             return new Catraca(

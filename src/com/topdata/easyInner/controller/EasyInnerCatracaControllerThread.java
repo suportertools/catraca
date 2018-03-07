@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Random;
 import javax.sound.sampled.LineUnavailableException;
 
-public class EasyInnerCatracaControllerThread {
+public class EasyInnerCatracaControllerThread extends DAO {
 
     private Inner inner;
     private EasyInner easy_inner_thread;
@@ -35,10 +35,9 @@ public class EasyInnerCatracaControllerThread {
     private boolean LiberaSaidaInvertida = false;
 
     private Boolean Parar = false;
+    private Integer attempts = 0;
 
     //private boolean fechar_portas = true;
-    
-
     public EasyInnerCatracaControllerThread(Inner inner, EasyInner easy_inner_thread) {
         this.inner = inner;
         this.easy_inner_thread = easy_inner_thread;
@@ -67,13 +66,11 @@ public class EasyInnerCatracaControllerThread {
             //if (Ret != Enumeradores.RET_COMANDO_OK) {
             //    return;
             //}
-
             //Abre a porta de Comunicação com os Inners..
 //            int Ret = easy_inner_thread.AbrirPortaComunicacao(inner.ObjectCatraca.getPorta()); // PORTA PADRÃO
 //            if (Ret != Enumeradores.RET_COMANDO_OK) {
 //                return;
 //            }
-
             //Enquanto Parar = false prosseguir a maquina...
             while (!getParar()) {
                 //Verifica o Estado do Inner Atual..
@@ -538,12 +535,12 @@ public class EasyInnerCatracaControllerThread {
         try {
             // ATUALIZA AUTOMATICAMENTE AS BIOMETRIAS SE TIVER ALGUMA NOVA
             if (inner.Biometrico) {
-                DAO dao = new DAO();
-                if (!dao.getConectado()) {
+
+                if (!isActive()) {
                     return;
                 }
 
-                ResultSet rs = dao.query("SELECT * FROM pes_biometria WHERE is_ativo = true AND is_enviado = false AND ds_biometria <> '' AND ds_biometria2 <> ''");
+                ResultSet rs = query("SELECT * FROM pes_biometria WHERE is_ativo = true AND is_enviado = false AND ds_biometria <> '' AND ds_biometria2 <> ''");
                 if (rs.next()) {
                     //form.get(0).getLblStatus().setText("Atualizando Biometrias");
                     loadBiometria();
@@ -759,19 +756,19 @@ public class EasyInnerCatracaControllerThread {
                         switch (json.getVia()) {
                             case 99:
                                 if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
-                                    new DAO().query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_sis_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                                    query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_sis_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
                                 }
-                                new DAO().query_execute("UPDATE conv_movimento SET is_ativo = false, dt_entrada = CURRENT_DATE WHERE id = " + json.getNr_pessoa() + " AND is_ativo = true;");
+                                query_execute("UPDATE conv_movimento SET is_ativo = false, dt_entrada = CURRENT_DATE WHERE id = " + json.getNr_pessoa() + " AND is_ativo = true;");
                                 break;
                             default:
                                 if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
-                                    new DAO().query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                                    query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
                                 }
                                 break;
                         }
                     } else {
                         if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
-                            new DAO().query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                            query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
                         }
                     }
 
@@ -816,7 +813,7 @@ public class EasyInnerCatracaControllerThread {
             //Envia o comando de PING ON LINE, se o retorno for OK volta para o estado onde chamou o método
             int retorno = easy_inner_thread.PingOnLine(inner.Numero);
             //int retorno = 0; // PING É FEITO NA THREAD
-            
+
             if (retorno == easy_inner_thread.RET_COMANDO_OK) {
                 inner.EstadoAtual = inner.EstadoSolicitacaoPingOnLine;
             } else {
@@ -1619,12 +1616,12 @@ public class EasyInnerCatracaControllerThread {
 
     public RetornoJson RetornaPessoaLiberada() {
         try {
-            DAO dao = new DAO();
-            if (!dao.getConectado()) {
+
+            if (!isActive()) {
                 return null;
             }
             if (inner.ObjectCatraca.getVerificacao_de_liberacao()) {
-                ResultSet rs_test = dao.query(
+                ResultSet rs_test = query(
                         "SELECT COUNT(*) AS qnt \n "
                         + " FROM soc_catraca_liberada cl \n"
                         + "INNER JOIN soc_catraca c ON c.id = cl.id_catraca\n"
@@ -1634,20 +1631,19 @@ public class EasyInnerCatracaControllerThread {
                 rs_test.next();
 
                 if (rs_test.getInt("qnt") > 1) {
-                    dao = new DAO();
-                    if (!dao.getConectado()) {
+
+                    if (!isActive()) {
                         return null;
                     }
-                    dao.query_execute("DELETE FROM soc_catraca_liberada WHERE id_catraca = " + inner.ObjectCatraca.getId());
+                    query_execute("DELETE FROM soc_catraca_liberada WHERE id_catraca = " + inner.ObjectCatraca.getId());
                 }
 
                 rs_test.close();
 
-                dao = new DAO();
-                if (!dao.getConectado()) {
+                if (!isActive()) {
                     return null;
                 }
-                ResultSet rs = dao.query(
+                ResultSet rs = query(
                         "SELECT cl.nr_pessoa AS pessoa, \n "
                         + "      cl.ds_cartao AS cartao \n "
                         + " FROM soc_catraca_liberada cl \n"
@@ -1664,11 +1660,11 @@ public class EasyInnerCatracaControllerThread {
                     } else {
                         json_webservice = EnviaAtualizacao.webservice(rs.getString("cartao"), inner);
                     }
-                    dao = new DAO();
-                    if (!dao.getConectado()) {
+
+                    if (!isActive()) {
                         return null;
                     }
-                    dao.query("DELETE FROM soc_catraca_liberada WHERE id_catraca = " + inner.ObjectCatraca.getId());
+                    query_execute("DELETE FROM soc_catraca_liberada WHERE id_catraca = " + inner.ObjectCatraca.getId());
 
                     rs.close();
                     return json_webservice;
@@ -1676,11 +1672,11 @@ public class EasyInnerCatracaControllerThread {
             }
 
             if (inner.ObjectCatraca.getVerificacao_de_biometria()) {
-                dao = new DAO();
-                if (!dao.getConectado()) {
+
+                if (!isActive()) {
                     return null;
                 }
-                ResultSet rs = dao.query(
+                ResultSet rs = query(
                         "SELECT id_pessoa AS pessoa FROM pes_biometria_catraca WHERE ds_ip = '" + inner.ObjectCatraca.getIP() + "'"
                 );
 
@@ -1693,18 +1689,17 @@ public class EasyInnerCatracaControllerThread {
                         json_webservice = EnviaAtualizacao.webservice(rs.getInt("pessoa"), inner);
                     }
 
-                    dao = new DAO();
-                    if (!dao.getConectado()) {
+                    if (!isActive()) {
                         return null;
                     }
-                    dao.query("DELETE FROM pes_biometria_catraca WHERE ds_ip = '" + inner.ObjectCatraca.getIP() + "'");
+                    query_execute("DELETE FROM pes_biometria_catraca WHERE ds_ip = '" + inner.ObjectCatraca.getIP() + "'");
 
                     rs.close();
 
                     return json_webservice;
                 }
 //                String my_ip = "";
-//                DAO dao = new DAO();
+//                
 //                if (!dao.getConectado()){
 //                    return;
 //                }
@@ -1822,11 +1817,11 @@ public class EasyInnerCatracaControllerThread {
 
     public String logErro(int codigo_erro) {
         try {
-            DAO dao = new DAO();
-            if (!dao.getConectado()) {
+
+            if (!isActive()) {
                 return "CÓDIGO DE ERRO NÃO ENCONTRADO";
             }
-            ResultSet rs = dao.query(
+            ResultSet rs = query(
                     "  SELECT ce.ds_descricao AS descricao_erro \n "
                     + "  FROM soc_catraca_erro ce \n "
                     + " WHERE ce.nr_codigo = " + codigo_erro
@@ -1859,28 +1854,28 @@ public class EasyInnerCatracaControllerThread {
     public void atualizaMonitoraCatraca(Boolean status, String descricao_status) {
         Random random = new Random();
         Integer random_id = random.nextInt(10000000);
-        DAO dao = new DAO();
-        if (dao.getConectado()) {
-            dao.query("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = " + status + ", ds_status = '" + descricao_status + "' WHERE id_catraca = " + inner.ObjectCatraca.getId());
+
+        if (isActive()) {
+            query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = " + status + ", ds_status = '" + descricao_status + "' WHERE id_catraca = " + inner.ObjectCatraca.getId());
         }
     }
 
     public void atualizaAcessoCatraca(String mensagem) {
-        DAO dao = new DAO();
-        if (dao.getConectado()) {
-            dao.query("UPDATE soc_catraca_monitora SET ds_mensagem = '" + mensagem + "' WHERE id_catraca = " + inner.ObjectCatraca.getId());
+
+        if (isActive()) {
+            query_execute("UPDATE soc_catraca_monitora SET ds_mensagem = '" + mensagem + "' WHERE id_catraca = " + inner.ObjectCatraca.getId());
         }
     }
 
     public boolean loadBiometria() {
         try {
             // INSERE OS USUÁRIOS NA MEMÓRIA DA CATRACA QUE ESTA ATIVO E NÃO ENVIADO
-            DAO dao = new DAO();
-            if (!dao.getConectado()) {
+
+            if (!isActive()) {
                 return false;
             }
 
-            ResultSet rs = dao.query("SELECT * FROM pes_biometria WHERE is_ativo = true AND is_enviado = false AND ds_biometria <> '' AND ds_biometria2 <> ''");
+            ResultSet rs = query("SELECT * FROM pes_biometria WHERE is_ativo = true AND is_enviado = false AND ds_biometria <> '' AND ds_biometria2 <> ''");
 
             while (rs.next()) {
                 Integer id_usuario = rs.getInt("id_pessoa");
@@ -1912,21 +1907,20 @@ public class EasyInnerCatracaControllerThread {
                 int xx2 = easy_inner_thread.UsuarioFoiEnviado(inner.Numero, 0);
                 //System.out.println(xx2);
                 if (xx2 == 0 || xx2 == 131) {
-                    dao = new DAO();
-                    if (!dao.getConectado()) {
+
+                    if (!isActive()) {
                         return false;
                     }
-                    dao.query("UPDATE pes_biometria SET is_enviado = true WHERE id_pessoa = " + id_usuario);
+                    query_execute("UPDATE pes_biometria SET is_enviado = true WHERE id_pessoa = " + id_usuario);
                 }
             }
 
             // EXCLUI USUARIOS DA CATRACA QUE ESTÃO INATIVOS E ENVIADOS
-            dao = new DAO();
-            if (!dao.getConectado()) {
+            if (!isActive()) {
                 return false;
             }
 
-            rs = dao.query("SELECT id_pessoa FROM pes_biometria WHERE is_ativo = false AND is_enviado = true");
+            rs = query("SELECT id_pessoa FROM pes_biometria WHERE is_ativo = false AND is_enviado = true");
 
             Integer r = 0;
             while (rs.next()) {
@@ -1969,12 +1963,12 @@ public class EasyInnerCatracaControllerThread {
                         r = easy_inner_thread.ReceberUsuarioLista(inner.Numero, Usuario);
 
                         if (r == Enumeradores.RET_COMANDO_OK) {
-                            dao = new DAO();
-                            if (!dao.getConectado()) {
+
+                            if (!isActive()) {
                                 return false;
                             }
 
-                            rs = dao.query("SELECT * FROM pes_biometria WHERE id_pessoa = " + Integer.valueOf(Usuario.toString()) + " AND is_ativo = true");
+                            rs = query("SELECT * FROM pes_biometria WHERE id_pessoa = " + Integer.valueOf(Usuario.toString()) + " AND is_ativo = true");
                             r = 0;
                             if (!rs.next()) {
                                 r = easy_inner_thread.SolicitarExclusaoUsuario(inner.Numero, EasyInnerUtils.remZeroEsquerda(Usuario.toString()));
@@ -2634,12 +2628,12 @@ public class EasyInnerCatracaControllerThread {
             foto = "";
 
             try {
-                DAO dao = new DAO();
-                if (!dao.getConectado()) {
+
+                if (!isActive()) {
                     return;
                 }
 
-                ResultSet rs = dao.query(
+                ResultSet rs = query(
                         "  SELECT p.id AS id, \n "
                         + "       p.ds_nome AS nome, \n "
                         + "       p.ds_documento AS documento, \n "

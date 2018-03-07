@@ -20,7 +20,7 @@ import java.util.TimeZone;
 import java.util.concurrent.FutureTask;
 import javax.swing.JOptionPane;
 
-public class EasyInnerCatracaController {
+public class EasyInnerCatracaController extends DAO {
 
     private JFRMainCatraca form = null;
     //private DAOx dao = new DAOx();
@@ -38,15 +38,14 @@ public class EasyInnerCatracaController {
         // INICIA A CONFIGURAÇÃO E CONEXÃO
         String mac = Mac.getInstance();
 
-        DAO dao = new DAO();
-        if (dao.getConectado()) {
-            dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN (SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+        if (isActive()) {
+            query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN (SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
         }
 
         try {
             //COMEÇA COMUNICAÇÃO COM O BANCO POSTGRES 
 
-            while (!new DAO().getConectado()) {
+            while (!isActive()) {
                 Thread.sleep(5000);
             }
             //FINALIZA A COMUNICAÇÃO COM O BANCO
@@ -81,9 +80,8 @@ public class EasyInnerCatracaController {
 
     private Boolean load_thread_catraca(Catraca catraca, Integer i, EasyInner easy_inner_thread) throws InterruptedException {
 
-        DAO dao = new DAO();
-        if (dao.getConectado()) {
-            dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca = " + catraca.getId());
+        if (isActive()) {
+            query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca = " + catraca.getId());
         }
 
         typInnersCadastrados[i] = new Inner();
@@ -99,8 +97,8 @@ public class EasyInnerCatracaController {
         typInnersCadastrados[i].Catraca = (boolean) true; // FALSE PARA O CASO conf_json.getTipo_giro_catraca() == 0
         typInnersCadastrados[i].Biometrico = (boolean) catraca.getBiometrico();
         typInnersCadastrados[i].CntDoEvents = 0; // PADRÃO DOCUMENTAÇÃO SDK
-        typInnersCadastrados[i].CountPingFail = 0; // PADRÃO DOCUMENTAÇÃO SDK
-        typInnersCadastrados[i].CountTentativasEnvioComando = 0; // PADRÃO DOCUMENTAÇÃO SDK
+        typInnersCadastrados[i].CountPingFail = 1000; // PADRÃO DOCUMENTAÇÃO SDK
+        typInnersCadastrados[i].CountTentativasEnvioComando = 200; // PADRÃO DOCUMENTAÇÃO SDK
         typInnersCadastrados[i].EstadoAtual = Enumeradores.EstadosInner.ESTADO_CONECTAR;
         typInnersCadastrados[i].TempoInicialPingOnLine = (int) System.currentTimeMillis();
         typInnersCadastrados[i].EstadoTeclado = Enumeradores.EstadosTeclado.TECLADO_EM_BRANCO;
@@ -109,9 +107,9 @@ public class EasyInnerCatracaController {
 
         final EasyInnerCatracaControllerThread ei = new EasyInnerCatracaControllerThread(typInnersCadastrados[i], easy_inner_thread);
 
-        dao = new DAO();
-        if (dao.getConectado()) {
-            dao.query_execute("INSERT INTO soc_catraca_monitora (id_catraca, nr_ping, is_ativo) VALUES (" + catraca.getId() + ", 0, false);");
+ 
+        if (isActive()) {
+            query_execute("INSERT INTO soc_catraca_monitora (id_catraca, nr_ping, is_ativo) VALUES (" + catraca.getId() + ", 0, false);");
         }
 
         FutureTask theTask = new FutureTask(new Runnable() {
@@ -180,11 +178,11 @@ public class EasyInnerCatracaController {
         while (!parar) {
             try {
                 for (int i = 0; i < lista_catraca.size(); i++) {
-                    if (!new DAO().getConectado()) {
+                    if (!isActive()) {
                         continue;
                     }
 
-                    ResultSet rs = new DAO().query("SELECT is_atualizar FROM soc_catraca_monitora WHERE id_catraca = " + lista_catraca.get(i).getId());
+                    ResultSet rs = query("SELECT is_atualizar FROM soc_catraca_monitora WHERE id_catraca = " + lista_catraca.get(i).getId());
                     if (rs != null) {
                         rs.next();
                         if (rs.getRow() > 0) {
@@ -217,7 +215,7 @@ public class EasyInnerCatracaController {
 //    private void iniciarMaquinaEstados() throws InterruptedException {
 //        DAO dao = new DAO();
 //        String mac = Mac.getInstance();
-//        if (dao.getConectado()) {
+//        if (dao.isActive()) {
 //            dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
 //        }
 //
@@ -258,7 +256,7 @@ public class EasyInnerCatracaController {
 //            typInnersCadastrados[i].PingOnline = false;
 //
 //            dao = new DAO();
-//            if (dao.getConectado()) {
+//            if (dao.isActive()) {
 //                dao.query_execute("INSERT INTO soc_catraca_monitora (id_catraca, nr_ping, is_ativo) VALUES (" + ct.getId() + ", 0, false);");
 //            }
 //

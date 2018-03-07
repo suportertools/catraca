@@ -28,16 +28,16 @@ import java.util.List;
  *
  * @author juliano.ezequiel
  */
-public class EasyInnerCadastroController {
+public class EasyInnerCadastroController extends DAO {
 
     private final JFRCadastro uiCadastro;
     private final EasyInner easyInner;
     private final EasyInnerBioService bioService;
     private List<String> dispositivos = new ArrayList();
-    
+
     private Boolean digital_capturada_1 = false;
     private Boolean digital_capturada_2 = false;
-    
+
     private Catraca catraca = new Catraca();
 
     public EasyInnerCadastroController(JFRCadastro innerCadastroBio) {
@@ -58,7 +58,7 @@ public class EasyInnerCadastroController {
         } else {
             //JOptionPane.showMessageDialog(null, "DISPOSITIVOS ENCONTRADOS");
         }
-        
+
         digital_capturada_1 = false;
         digital_capturada_2 = false;
     }
@@ -69,7 +69,7 @@ public class EasyInnerCadastroController {
     public void cadastrarDigitalHamster() {
         StringBuilder digital1 = new StringBuilder();
         StringBuilder digital2 = new StringBuilder();
-        
+
         try {
             if (!digital_capturada_1) {
                 JOptionPane.showMessageDialog(null, "Coloque a PRIMEIRA Digital");
@@ -97,7 +97,7 @@ public class EasyInnerCadastroController {
 
         Integer codigo = Integer.valueOf(uiCadastro.textCodigo.getText());
 
-        new DAO().query(
+        query_execute(
                 "INSERT INTO pes_biometria (dt_lancamento, is_ativo, ds_biometria, ds_biometria2, id_pessoa, is_enviado) \n "
                 + "VALUES (CURRENT_DATE, true, '" + digital1.toString() + "','" + digital2.toString() + "', " + codigo + ", false);"
         );
@@ -315,7 +315,7 @@ public class EasyInnerCadastroController {
 
             Integer codigo = Integer.valueOf(uiCadastro.textCodigo.getText());
 
-            new DAO().query(
+            query_execute(
                     "INSERT INTO pes_biometria (dt_lancamento, is_ativo, ds_biometria, ds_biometria2, id_pessoa, is_enviado) \n "
                     + "VALUES (CURRENT_DATE, true, '" + digital1 + "','" + digital2 + "', " + codigo + ", false);"
             );

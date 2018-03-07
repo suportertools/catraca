@@ -20,7 +20,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.sql.SQLException;
 import java.util.GregorianCalendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -54,8 +57,13 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
             public void windowClosing(WindowEvent e) {
                 DAO dao = new DAO();
                 String mac = Mac.getInstance();
-                if (dao.getConectado()) {
-                    dao.query("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+                if (dao.isActive()) {
+                    dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+                }
+                try {
+                    new DAO().getConnection().close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(JFRMainCatraca.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 System.exit(0);
             }
@@ -175,8 +183,13 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 DAO dao = new DAO();
                 String mac = Mac.getInstance();
-                if (dao.getConectado()) {
-                    dao.query("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+                if (dao.isActive()) {
+                    dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+                }
+                try {
+                    new DAO().getConnection().close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(JFRMainCatraca.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 System.exit(0);
             }
