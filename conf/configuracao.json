@@ -5,5 +5,7 @@
     "postgres_banco": "Sindical",
     "postgres_cliente": "Sindical",
     "postgres_porta": "5432",
-    "servidor_monitor": "sindical.rtools.com.br:7078"
+    "servidor_monitor": "sindical.rtools.com.br:7078",
+    "web_service": true,
+    "web_service_sobre": "Caso habilitar editar web_service.conf"
 }

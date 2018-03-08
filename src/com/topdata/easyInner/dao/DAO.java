@@ -1,6 +1,8 @@
 package com.topdata.easyInner.dao;
 
 import com.topdata.easyInner.utils.Logs;
+import com.topdata.easyInner.ws.AuthWS;
+import com.topdata.easyInner.ws.StatusWS;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -104,15 +106,20 @@ public class DAO {
     }
 
     public boolean isActive() {
-        if (getConnection() != null) {
+        Conf_Cliente conf_Cliente = new Conf_Cliente();
+        if (conf_Cliente.getWeb_service()) {
+            if (StatusWS.isAtive()) {
+                return true;
+            }
+        } else if (getConnection() != null) {
             try {
                 Connection oConnect = this.getConnection();
-                PreparedStatement ps = oConnect.prepareStatement("SELECT CURRENT_DATE");
+                PreparedStatement ps = oConnect.prepareStatement("SELECT version()");
                 ps.executeQuery();
                 return true;
             } catch (SQLException e) {
                 System.err.println("Erro de conexão: " + e.getMessage());
-                if(e.getMessage().toLowerCase().contains("connection has been closed")) {
+                if (e.getMessage().toLowerCase().contains("connection has been closed")) {
                     try {
                         Thread.sleep(1000 * 60 * 1);
                         conn = null;

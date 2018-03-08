@@ -3,6 +3,9 @@ package com.topdata.easyInner.utils;
 import com.topdata.easyInner.dao.Conf_Cliente;
 import com.topdata.easyInner.dao.DAO;
 import com.topdata.easyInner.entity.Inner;
+import com.topdata.easyInner.ws.CatracaMonitoraWS;
+import com.topdata.easyInner.ws.FunctionsWS;
+import com.topdata.easyInner.ws.PessoaWS;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,23 +27,44 @@ public class EnviaAtualizacao {
     }
 
     public static RetornoJson webservice(Integer id_pessoa, String cartao, Inner inner) {
+        Conf_Cliente conf_Cliente = new Conf_Cliente();
+        conf_Cliente.loadJson();
         if (id_pessoa != null) {
-            return retorna_pessoa_funcao(id_pessoa, inner);
+            if (conf_Cliente.getWeb_service()) {
+                return retorna_pessoa_funcao_ws(id_pessoa, inner);
+            } else {
+                return retorna_pessoa_funcao(id_pessoa, inner);                
+            }
         } else {
             if (cartao.length() < 10) {
                 try {
                     Integer.valueOf(cartao);
-
-                    return retorna_pessoa_funcao(Integer.valueOf(cartao), inner);
+                    if (conf_Cliente.getWeb_service()) {
+                        return retorna_pessoa_funcao_ws(Integer.valueOf(cartao), inner);
+                    } else {
+                        return retorna_pessoa_funcao(Integer.valueOf(cartao), inner);
+                    }
                 } catch (Exception e) {
                     e.getMessage();
-                    return retorna_pessoa_funcao(-11, inner);
+                    if (conf_Cliente.getWeb_service()) {
+                        return retorna_pessoa_funcao_ws(-11, inner);
+                    } else {
+                        return retorna_pessoa_funcao(-11, inner);
+                    }
                 }
             }
             if (cartao.length() > 14) {
-                return retorna_pessoa_funcao(-11, inner);
+                if (conf_Cliente.getWeb_service()) {
+                    return retorna_pessoa_funcao_ws(-11, inner);
+                } else {
+                    return retorna_pessoa_funcao(-11, inner);
+                }
             }
-            return retorna_catraca_funcao(cartao, inner);
+            if (conf_Cliente.getWeb_service()) {
+                return retorna_catraca_funcao(cartao, inner);
+            } else {
+                return retorna_catraca_funcao(cartao, inner);
+            }
         }
     }
 
@@ -166,6 +190,60 @@ public class EnviaAtualizacao {
                         false
                 );
             }
+
+        } catch (Exception e) {
+            e.getMessage();
+        }
+        return json;
+    }
+
+    private static RetornoJson retorna_pessoa_funcao_ws(Integer nr_pessoa, Inner inner) {
+        RetornoJson json = new RetornoJson();
+        try {
+            if (isCaiu_conexao()) {
+                return null;
+            }
+
+            if (nr_pessoa >= 0) {
+                if (nr_pessoa == 0) {
+                    //  LIBERA A CATRACA PARA VISITANTE
+                    json = new RetornoJson(
+                            nr_pessoa,
+                            "VISITANTE",
+                            "",
+                            "",
+                            null,
+                            "Catraca Liberada",
+                            null,
+                            true
+                    );
+                } else {
+                    // FUNÇÃO PARA VERIFICAÇÃO DA PESSOA (SE FOR LIBERADA OU NÃO)                    
+                    Integer result = FunctionsWS.catraca(nr_pessoa, inner.ObjectCatraca.getDepartamento(), 2, null);
+                    try {
+                        if (result == null) {
+                            json = new RetornoJson(
+                                    nr_pessoa,
+                                    "PESSOA NÃO ENCONTRADA",
+                                    "",
+                                    "",
+                                    -1,
+                                    "Erro ao pesquisar pessoa na função",
+                                    null,
+                                    false
+                            );
+
+                        }
+                    } catch (Exception e) {
+                        return json;
+                    }
+
+                    
+                }
+            }
+
+            json = PessoaWS.select(nr_pessoa);            
+
 
         } catch (Exception e) {
             e.getMessage();
@@ -321,7 +399,13 @@ public class EnviaAtualizacao {
             Random random = new Random();
             Integer random_id = random.nextInt(10000000);
             if (!isCaiu_conexao()) {
-                new DAO().query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = true WHERE id_catraca = " + catraca_id);
+                Conf_Cliente conf_Cliente = new Conf_Cliente();
+                conf_Cliente.loadJson();
+                if (conf_Cliente.getWeb_service()) {
+                    CatracaMonitoraWS.ping(random_id, catraca_id);
+                } else {
+                    new DAO().query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = true WHERE id_catraca = " + catraca_id);
+                }
             }
         } catch (Exception e) {
             e.getMessage();
@@ -330,9 +414,16 @@ public class EnviaAtualizacao {
 
     public static void status(Integer catraca_id, Boolean ativo, String status) {
         if (!isCaiu_conexao()) {
+            Conf_Cliente conf_Cliente = new Conf_Cliente();
+            conf_Cliente.loadJson();
             Random random = new Random();
             Integer random_id = random.nextInt(10000000);
-            new DAO().query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = " + ativo + ", ds_status = '" + status + "' WHERE id_catraca = " + catraca_id);
+            if (conf_Cliente.getWeb_service()) {
+                CatracaMonitoraWS.status(random_id, ativo, status, catraca_id);
+            } else {
+                new DAO().query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = " + ativo + ", ds_status = '" + status + "' WHERE id_catraca = " + catraca_id);
+            }
+
         }
     }
 
@@ -345,7 +436,19 @@ public class EnviaAtualizacao {
     }
 
     private static void atualiza_tela(Inner inner, RetornoJson json, Boolean limpar) {
-        if (limpar) {
+
+        Conf_Cliente conf_Cliente = new Conf_Cliente();
+        conf_Cliente.loadJson();
+
+        if (conf_Cliente.getWeb_service()) {
+            if (limpar) {
+                if (!isCaiu_conexao()) {
+                    CatracaMonitoraWS.clear1(inner.ObjectCatraca.getId());
+                }
+            } else if (!isCaiu_conexao()) {
+                CatracaMonitoraWS.clear2(inner.ObjectCatraca.getId(), json);
+            }
+        } else if (limpar) {
             if (!isCaiu_conexao()) {
                 new DAO().query_execute(
                         "UPDATE soc_catraca_monitora \n "
@@ -358,19 +461,17 @@ public class EnviaAtualizacao {
                         + "WHERE id_catraca = " + inner.ObjectCatraca.getId()
                 );
             }
-        } else {
-            if (!isCaiu_conexao()) {
-                new DAO().query_execute(
-                        "UPDATE soc_catraca_monitora \n "
-                        + " SET nr_pessoa = " + json.getNr_pessoa() + ", \n"
-                        + "     ds_nome = '" + json.getNome() + "', \n"
-                        + "     ds_foto = '" + json.getFoto() + "', \n"
-                        + "     ds_observacao = '" + json.getObservacao() + "', \n"
-                        + "     ds_mensagem = '" + json.getMensagem() + "', \n"
-                        + "     is_liberado = " + json.getLiberado() + " \n"
-                        + "WHERE id_catraca = " + inner.ObjectCatraca.getId()
-                );
-            }
+        } else if (!isCaiu_conexao()) {
+            new DAO().query_execute(
+                    "UPDATE soc_catraca_monitora \n "
+                    + " SET nr_pessoa = " + json.getNr_pessoa() + ", \n"
+                    + "     ds_nome = '" + json.getNome() + "', \n"
+                    + "     ds_foto = '" + json.getFoto() + "', \n"
+                    + "     ds_observacao = '" + json.getObservacao() + "', \n"
+                    + "     ds_mensagem = '" + json.getMensagem() + "', \n"
+                    + "     is_liberado = " + json.getLiberado() + " \n"
+                    + "WHERE id_catraca = " + inner.ObjectCatraca.getId()
+            );
         }
 
         enviarAtualizacaoTelaCatraca(inner);
@@ -417,7 +518,14 @@ public class EnviaAtualizacao {
 
     public static boolean isCaiu_conexao() {
         // return !new DAO().getConectado();
-        return !new DAO().isActive();
+        Conf_Cliente conf_Cliente = new Conf_Cliente();
+        conf_Cliente.loadJson();
+
+        if (conf_Cliente.getWeb_service()) {
+            return !JSONS.isActive();
+        } else {
+            return !new DAO().isActive();
+        }
     }
 
 }

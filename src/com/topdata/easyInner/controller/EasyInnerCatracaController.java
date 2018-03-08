@@ -10,8 +10,11 @@ import com.topdata.easyInner.enumeradores.Enumeradores;
 import com.topdata.easyInner.ui.JFRMainCatraca;
 import static com.topdata.easyInner.ui.JIFEasyInnerOnLine.TotalInners;
 import static com.topdata.easyInner.ui.JIFEasyInnerOnLine.typInnersCadastrados;
+import com.topdata.easyInner.utils.JSONS;
 import com.topdata.easyInner.utils.Logs;
 import com.topdata.easyInner.utils.Mac;
+import com.topdata.easyInner.ws.CatracaMonitoraWS;
+import com.topdata.easyInner.ws.CatracaWS;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -38,19 +41,31 @@ public class EasyInnerCatracaController extends DAO {
         // INICIA A CONFIGURAÇÃO E CONEXÃO
         String mac = Mac.getInstance();
 
-        if (isActive()) {
+        if (conf_cliente.getWeb_service()) {
+            CatracaMonitoraWS.start();
+        } else if (isActive()) {
             query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN (SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
         }
 
         try {
             //COMEÇA COMUNICAÇÃO COM O BANCO POSTGRES 
 
-            while (!isActive()) {
-                Thread.sleep(5000);
+            if (conf_cliente.getWeb_service()) {
+                while (!JSONS.isActive()) {
+                    Thread.sleep(5000);
+                }
+            } else {
+                while (!isActive()) {
+                    Thread.sleep(5000);
+                }
             }
             //FINALIZA A COMUNICAÇÃO COM O BANCO
 
-            lista_catraca = new CatracaDao().listaCatraca();
+            if (conf_cliente.getWeb_service()) {
+                lista_catraca = new CatracaWS().listaCatraca();
+            } else {
+                lista_catraca = new CatracaDao().listaCatraca();
+            }
 
             if (lista_catraca.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "LISTA DE CATRACA VAZIA!");
@@ -80,7 +95,11 @@ public class EasyInnerCatracaController extends DAO {
 
     private Boolean load_thread_catraca(Catraca catraca, Integer i, EasyInner easy_inner_thread) throws InterruptedException {
 
-        if (isActive()) {
+        if (conf_cliente.getWeb_service()) {
+            if (JSONS.isActive()) {
+                CatracaMonitoraWS.delete(catraca.getId());
+            }
+        } else if (isActive()) {
             query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca = " + catraca.getId());
         }
 
@@ -107,8 +126,11 @@ public class EasyInnerCatracaController extends DAO {
 
         final EasyInnerCatracaControllerThread ei = new EasyInnerCatracaControllerThread(typInnersCadastrados[i], easy_inner_thread);
 
- 
-        if (isActive()) {
+        if (conf_cliente.getWeb_service()) {
+            if (JSONS.isActive()) {
+                CatracaMonitoraWS.store(catraca.getId());
+            }
+        } else if (isActive()) {
             query_execute("INSERT INTO soc_catraca_monitora (id_catraca, nr_ping, is_ativo) VALUES (" + catraca.getId() + ", 0, false);");
         }
 
@@ -178,28 +200,45 @@ public class EasyInnerCatracaController extends DAO {
         while (!parar) {
             try {
                 for (int i = 0; i < lista_catraca.size(); i++) {
-                    if (!isActive()) {
-                        continue;
-                    }
 
-                    ResultSet rs = query("SELECT is_atualizar FROM soc_catraca_monitora WHERE id_catraca = " + lista_catraca.get(i).getId());
-                    if (rs != null) {
-                        rs.next();
-                        if (rs.getRow() > 0) {
-                            if (rs.getBoolean("is_atualizar")) {
+                    if (conf_cliente.getWeb_service()) {
+                        if (!JSONS.isActive()) {
+                            continue;
+                        }
+                        Integer result = CatracaMonitoraWS.is_atualizar(lista_catraca.get(i).getId());
+                        if (result != null) {
+                            if (result == 1) {
                                 interromperThread(lista_catraca.get(i).getNumero());
-                                //                            if (!list_thread.isEmpty() && list_thread.size() == lista_catraca.size()) {
-                                //                                list_thread.get(i).interrupt();
-                                //                                list_thread.remove(i);
-                                //                            }
-
                                 load_thread_catraca(lista_catraca.get(i), i, easy_inner_thread);
+                            } else if (result == 2) {
+                                load_thread_catraca(lista_catraca.get(i), i, easy_inner_thread);
+                                lista_catraca.get(i).setAtualizar(false);
                             }
-                        } else {
-                            load_thread_catraca(lista_catraca.get(i), i, easy_inner_thread);
+                        }
+                    } else {
+                        if (!isActive()) {
+                            continue;
+                        }
 
-                            // DEPOIS ATUALIZAR SINDICAL PARA A ATUALIZAÇÃO SER FEITA PELO BANCO
-                            lista_catraca.get(i).setAtualizar(false);
+                        ResultSet rs = query("SELECT is_atualizar FROM soc_catraca_monitora WHERE id_catraca = " + lista_catraca.get(i).getId());
+                        if (rs != null) {
+                            rs.next();
+                            if (rs.getRow() > 0) {
+                                if (rs.getBoolean("is_atualizar")) {
+                                    interromperThread(lista_catraca.get(i).getNumero());
+                                    //                            if (!list_thread.isEmpty() && list_thread.size() == lista_catraca.size()) {
+                                    //                                list_thread.get(i).interrupt();
+                                    //                                list_thread.remove(i);
+                                    //                            }
+
+                                    load_thread_catraca(lista_catraca.get(i), i, easy_inner_thread);
+                                }
+                            } else {
+                                load_thread_catraca(lista_catraca.get(i), i, easy_inner_thread);
+
+                                // DEPOIS ATUALIZAR SINDICAL PARA A ATUALIZAÇÃO SER FEITA PELO BANCO
+                                lista_catraca.get(i).setAtualizar(false);
+                            }
                         }
                     }
                 }
