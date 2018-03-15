@@ -1,7 +1,6 @@
 package com.topdata.easyInner.controller;
 
 import com.topdata.EasyInner;
-import com.topdata.easyInner.dao.Conf_Cliente;
 import com.topdata.easyInner.dao.DAO;
 import com.topdata.easyInner.entity.Inner;
 import com.topdata.easyInner.enumeradores.Enumeradores;
@@ -10,9 +9,6 @@ import com.topdata.easyInner.utils.EasyInnerUtils;
 import com.topdata.easyInner.utils.EnviaAtualizacao;
 import com.topdata.easyInner.utils.RetornoJson;
 import com.topdata.easyInner.utils.SoundUtils;
-import com.topdata.easyInner.ws.BiometriaCatracaWS;
-import com.topdata.easyInner.ws.CatracaLiberadaWS;
-import com.topdata.easyInner.ws.StatusWS;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -40,11 +36,9 @@ public class EasyInnerCatracaControllerThread extends DAO {
 
     private Boolean Parar = false;
     private Integer attempts = 0;
-    private Conf_Cliente conf_Cliente = new Conf_Cliente();
 
     //private boolean fechar_portas = true;
     public EasyInnerCatracaControllerThread(Inner inner, EasyInner easy_inner_thread) {
-        conf_Cliente.loadJson();
         this.inner = inner;
         this.easy_inner_thread = easy_inner_thread;
     }
@@ -542,27 +536,18 @@ public class EasyInnerCatracaControllerThread extends DAO {
             // ATUALIZA AUTOMATICAMENTE AS BIOMETRIAS SE TIVER ALGUMA NOVA
             if (inner.Biometrico) {
 
-                if (conf_Cliente.getWeb_service()) {
-                    if (!StatusWS.isAtive()) {
+                if (!isActive()) {
+                    return;
+                }
 
-                    }
-                } else {
-                    if (!isActive()) {
-                        return;
-                    }
-                    ResultSet rs = query("SELECT * FROM pes_biometria WHERE is_ativo = true AND is_enviado = false AND ds_biometria <> '' AND ds_biometria2 <> ''");
-                    if (rs.next()) {
-                        //form.get(0).getLblStatus().setText("Atualizando Biometrias");
-                        loadBiometria();
-                    }
+                ResultSet rs = query("SELECT * FROM pes_biometria WHERE is_ativo = true AND is_enviado = false AND ds_biometria <> '' AND ds_biometria2 <> ''");
+                if (rs.next()) {
+                    //form.get(0).getLblStatus().setText("Atualizando Biometrias");
+                    loadBiometria();
                 }
             }
 
-            if (conf_Cliente.getWeb_service()) {
-                json = RetornaPessoaLiberadaWS();
-            } else {
-                json = RetornaPessoaLiberada();
-            }
+            json = RetornaPessoaLiberada();
             if (json != null) {
                 if (!json.getLiberado()) {
                     inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_ENVIAR_MENSAGEM_ACESSO_NEGADO;
@@ -781,8 +766,10 @@ public class EasyInnerCatracaControllerThread extends DAO {
                                 }
                                 break;
                         }
-                    } else if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
-                        query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                    } else {
+                        if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
+                            query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                        }
                     }
 
                     EnviaAtualizacao.atualiza_tela(inner);
@@ -1738,34 +1725,6 @@ public class EasyInnerCatracaControllerThread extends DAO {
         } catch (SQLException e) {
             System.out.println("Exception 29: " + e.getMessage());
             return null;
-        }
-        return null;
-    }
-
-    public RetornoJson RetornaPessoaLiberadaWS() {
-        if (!StatusWS.isAtive()) {
-            return null;
-        }
-        if (inner.ObjectCatraca.getVerificacao_de_liberacao()) {
-            if (!isActive()) {
-                return null;
-            }
-            CatracaLiberadaWS.liberar(inner.Numero, inner.ObjectCatraca.getId());
-        }
-        if (inner.ObjectCatraca.getVerificacao_de_biometria()) {
-
-            if (!isActive()) {
-                return null;
-            }
-
-            Integer codigo = BiometriaCatracaWS.exists(inner.ObjectCatraca.getIP());
-
-            RetornoJson json_webservice = null;
-
-            if (codigo != null && codigo != -1) {
-                json_webservice = EnviaAtualizacao.webservice(codigo, inner);
-                return json_webservice;
-            }
         }
         return null;
     }

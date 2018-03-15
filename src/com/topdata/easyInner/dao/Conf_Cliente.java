@@ -40,13 +40,7 @@ public class Conf_Cliente {
             } catch (JSONException e) {
                 this.postgres_porta = "5432";
             }
-
-            try {
-                this.web_service = jSONObject.getBoolean("web_service");
-            } catch (JSONException e) {
-                this.web_service = false;
-            }
-
+            
 //            if (this.postgres_senha.isEmpty()) {
 //                if (postgres_banco.equals("Sindical")) {
 //                    this.postgres_senha = "989899";
@@ -66,7 +60,6 @@ public class Conf_Cliente {
     private String postgres_cliente;
     private String postgres_porta;
     private String servidor_monitor;
-    private Boolean web_service;
 
     public Conf_Cliente() {
         this.postgres_ip = "";
@@ -78,7 +71,7 @@ public class Conf_Cliente {
         this.servidor_monitor = "";
     }
 
-    public Conf_Cliente(String postgres_ip, String postgres_usuario, String postgres_senha, String postgres_banco, String postgres_cliente, String postgres_porta, String servidor_monitor, Boolean web_service) {
+    public Conf_Cliente(String postgres_ip, String postgres_usuario, String postgres_senha, String postgres_banco, String postgres_cliente, String postgres_porta, String servidor_monitor) {
         this.postgres_ip = postgres_ip;
         this.postgres_usuario = postgres_usuario;
         this.postgres_senha = postgres_senha;
@@ -86,7 +79,6 @@ public class Conf_Cliente {
         this.postgres_cliente = postgres_cliente;
         this.postgres_porta = postgres_porta;
         this.servidor_monitor = servidor_monitor;
-        this.web_service = web_service;
     }
 
     public String getPostgres_ip() {
@@ -149,14 +141,6 @@ public class Conf_Cliente {
      */
     public void setPostgres_porta(String postgres_porta) {
         this.postgres_porta = postgres_porta;
-    }
-
-    public Boolean getWeb_service() {
-        return web_service;
-    }
-
-    public void setWeb_service(Boolean web_service) {
-        this.web_service = web_service;
     }
 
 }

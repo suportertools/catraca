@@ -1,15 +1,12 @@
 package com.topdata.easyInner.ui;
 
 import com.topdata.easyInner.controller.EasyInnerCatracaController;
-import com.topdata.easyInner.dao.Conf_Cliente;
 import com.topdata.easyInner.dao.DAO;
 import com.topdata.easyInner.utils.Block;
 import com.topdata.easyInner.utils.BlockInterface;
 import com.topdata.easyInner.utils.EnviaAtualizacao;
 import com.topdata.easyInner.utils.Mac;
 import com.topdata.easyInner.utils.Path;
-import com.topdata.easyInner.ws.AuthWS;
-import com.topdata.easyInner.ws.CatracaMonitoraWS;
 import java.awt.AWTException;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -58,22 +55,15 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                Conf_Cliente conf_Cliente = new Conf_Cliente();
-                conf_Cliente.loadJson();
-                if (conf_Cliente.getWeb_service()) {
-                    CatracaMonitoraWS.start();
-                    AuthWS.logout();
-                } else {
-                    DAO dao = new DAO();
-                    String mac = Mac.getInstance();
-                    if (dao.isActive()) {
-                        dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
-                    }
-                    try {
-                        new DAO().getConnection().close();
-                    } catch (SQLException ex) {
-                        Logger.getLogger(JFRMainCatraca.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                DAO dao = new DAO();
+                String mac = Mac.getInstance();
+                if (dao.isActive()) {
+                    dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+                }
+                try {
+                    new DAO().getConnection().close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(JFRMainCatraca.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 System.exit(0);
             }
@@ -191,22 +181,15 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
         ActionListener action_sair = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Conf_Cliente conf_Cliente = new Conf_Cliente();
-                conf_Cliente.loadJson();
-                if (conf_Cliente.getWeb_service()) {
-                    CatracaMonitoraWS.start();
-                    AuthWS.logout();
-                } else {
-                    DAO dao = new DAO();
-                    String mac = Mac.getInstance();
-                    if (dao.isActive()) {
-                        dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
-                    }
-                    try {
-                        new DAO().getConnection().close();
-                    } catch (SQLException ex) {
-                        Logger.getLogger(JFRMainCatraca.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                DAO dao = new DAO();
+                String mac = Mac.getInstance();
+                if (dao.isActive()) {
+                    dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+                }
+                try {
+                    new DAO().getConnection().close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(JFRMainCatraca.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 System.exit(0);
             }
@@ -250,9 +233,6 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 // this is where your handler code goes...
             }
         });
-        new AuthWS();
-        AuthWS.logout();
-        AuthWS.login();
         EasyInnerCatracaController innerCatracaController = new EasyInnerCatracaController(new JFRMainCatraca());
         innerCatracaController.run();
     }

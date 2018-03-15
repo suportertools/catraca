@@ -1,8 +1,6 @@
 package com.topdata.easyInner.dao;
 
 import com.topdata.easyInner.utils.Logs;
-import com.topdata.easyInner.ws.AuthWS;
-import com.topdata.easyInner.ws.StatusWS;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -25,7 +23,7 @@ public class DAO {
             if (conn == null) {
                 conf_cliente = new Conf_Cliente();
                 conf_cliente.loadJson();
-                String conexao = "jdbc:postgresql://" + conf_cliente.getPostgres_ip() + ":" + conf_cliente.getPostgres_porta() + "/" + conf_cliente.getPostgres_banco();
+                String conexao = "jdbc:postgresql://" + conf_cliente.getPostgres_ip() + ":" + conf_cliente.getPostgres_porta() + "/" + conf_cliente.getPostgres_banco() + "?application_name=Catraca" + conf_cliente.getPostgres_cliente();
 //                try {
 //                    Class.forName("org.postgresql.Driver");
 //                } catch (ClassNotFoundException ex) {
@@ -106,15 +104,10 @@ public class DAO {
     }
 
     public boolean isActive() {
-        Conf_Cliente conf_Cliente = new Conf_Cliente();
-        if (conf_Cliente.getWeb_service()) {
-            if (StatusWS.isAtive()) {
-                return true;
-            }
-        } else if (getConnection() != null) {
+        if (getConnection() != null) {
             try {
                 Connection oConnect = this.getConnection();
-                PreparedStatement ps = oConnect.prepareStatement("SELECT version()");
+                PreparedStatement ps = oConnect.prepareStatement("SELECT CURRENT_DATE");
                 ps.executeQuery();
                 return true;
             } catch (SQLException e) {
