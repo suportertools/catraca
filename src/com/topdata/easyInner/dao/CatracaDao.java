@@ -24,13 +24,20 @@ public class CatracaDao extends DAO {
         try {
             List<Catraca> list = new ArrayList();
 
+//            ResultSet rs = query(
+//                    " SELECT c.* \n "
+//                    + " FROM soc_catraca c \n "
+//                    + "WHERE c.is_ativo = TRUE \n "
+//                    + "  AND c.ds_mac = '" + macString + "' \n "
+//                    + "ORDER BY c.nr_numero"
+//            );
             ResultSet rs = query(
                     " SELECT c.* \n "
-                    + " FROM soc_catraca c \n "
+                    + " FROM vw_catraca c \n "
                     + "WHERE c.is_ativo = TRUE \n "
                     + "  AND c.ds_mac = '" + macString + "' \n "
                     + "ORDER BY c.nr_numero"
-            );
+            );            
 
             while (rs.next()) {
                 list.add(
@@ -71,9 +78,16 @@ public class CatracaDao extends DAO {
 
         try {
 
+//            ResultSet rs = query(
+//                    " SELECT c.* \n "
+//                    + " FROM soc_catraca c \n "
+//                    + "WHERE c.is_ativo = TRUE \n "
+//                    + "  AND c.ds_mac = '" + macString + "' \n "
+//                    + "  AND id = " + id_catraca
+//            );
             ResultSet rs = query(
                     " SELECT c.* \n "
-                    + " FROM soc_catraca c \n "
+                    + " FROM vw_catraca c \n "
                     + "WHERE c.is_ativo = TRUE \n "
                     + "  AND c.ds_mac = '" + macString + "' \n "
                     + "  AND id = " + id_catraca

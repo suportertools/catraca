@@ -39,7 +39,8 @@ public class EasyInnerCatracaController extends DAO {
         String mac = Mac.getInstance();
 
         if (isActive()) {
-            query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN (SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+            // query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN (SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+            query("SELECT func_catraca_monitora(false, null, '" + mac + "')");
         }
 
         try {
@@ -81,7 +82,8 @@ public class EasyInnerCatracaController extends DAO {
     private Boolean load_thread_catraca(Catraca catraca, Integer i, EasyInner easy_inner_thread) throws InterruptedException {
 
         if (isActive()) {
-            query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca = " + catraca.getId());
+            // query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca = " + catraca.getId());
+            query("SELECT func_catraca_monitora(false, " + catraca.getId() + ", null)");
         }
 
         typInnersCadastrados[i] = new Inner();
@@ -107,9 +109,9 @@ public class EasyInnerCatracaController extends DAO {
 
         final EasyInnerCatracaControllerThread ei = new EasyInnerCatracaControllerThread(typInnersCadastrados[i], easy_inner_thread);
 
- 
         if (isActive()) {
-            query_execute("INSERT INTO soc_catraca_monitora (id_catraca, nr_ping, is_ativo) VALUES (" + catraca.getId() + ", 0, false);");
+            // query_execute("INSERT INTO soc_catraca_monitora (id_catraca, nr_ping, is_ativo) VALUES (" + catraca.getId() + ", 0, false);");
+            query("SELECT func_catraca_monitora(true, " + catraca.getId() + ", null)");
         }
 
         FutureTask theTask = new FutureTask(new Runnable() {
@@ -181,8 +183,8 @@ public class EasyInnerCatracaController extends DAO {
                     if (!isActive()) {
                         continue;
                     }
-
-                    ResultSet rs = query("SELECT is_atualizar FROM soc_catraca_monitora WHERE id_catraca = " + lista_catraca.get(i).getId());
+                    // ResultSet rs = query("SELECT is_atualizar FROM soc_catraca_monitora WHERE id_catraca = " + lista_catraca.get(i).getId());
+                    ResultSet rs = query("SELECT atualizar FROM vw_catraca_monitora WHERE id_catraca = " + lista_catraca.get(i).getId());
                     if (rs != null) {
                         rs.next();
                         if (rs.getRow() > 0) {

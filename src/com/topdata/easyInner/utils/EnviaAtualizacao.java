@@ -83,12 +83,17 @@ public class EnviaAtualizacao {
                         return json;
                     }
 
+//                    ResultSet rs_pessoa = new DAO().query(
+//                            "SELECT p.ds_nome AS nome, \n "
+//                            + "     f.ds_foto AS foto \n "
+//                            + "FROM pes_pessoa p \n "
+//                            + "INNER JOIN pes_fisica f ON f.id_pessoa = p.id \n "
+//                            + "WHERE p.id = " + nr_pessoa);
                     ResultSet rs_pessoa = new DAO().query(
-                            "SELECT p.ds_nome AS nome, \n "
-                            + "     f.ds_foto AS foto \n "
-                            + "FROM pes_pessoa p \n "
-                            + "INNER JOIN pes_fisica f ON f.id_pessoa = p.id \n "
-                            + "WHERE p.id = " + nr_pessoa);
+                            "  SELECT P.nome,             \n "
+                            + "       P.foto              \n "
+                            + "  FROM vw_catraca_pessoa P \n "
+                            + " WHERE P.id = " + nr_pessoa);
                     try {
                         rs_pessoa.next();
                         //  VERIFICA SE O CÓDIGO ENVIADO É VÁLIDO
@@ -121,11 +126,17 @@ public class EnviaAtualizacao {
                         );
                     } else {
                         // SE O RETORNO DA FUNÇÃO NÃO FOR LIBERADA
+//                        ResultSet rs_erro = new DAO().query(
+//                                "  SELECT ce.id AS id, \n "
+//                                + "       ce.ds_descricao AS descricao_erro \n "
+//                                + "  FROM soc_catraca_erro ce \n "
+//                                + " WHERE ce.nr_codigo = " + rs_funcao.getInt("retorno")
+//                        );
                         ResultSet rs_erro = new DAO().query(
-                                "  SELECT ce.id AS id, \n "
-                                + "       ce.ds_descricao AS descricao_erro \n "
-                                + "  FROM soc_catraca_erro ce \n "
-                                + " WHERE ce.nr_codigo = " + rs_funcao.getInt("retorno")
+                                "  SELECT ce.codigo, \n "
+                                + "       ce.descricao_erro \n "
+                                + "  FROM vw_catraca_erro ce \n "
+                                + " WHERE ce.codigo = " + rs_funcao.getInt("retorno")
                         );
 
                         rs_erro.next();
@@ -146,11 +157,17 @@ public class EnviaAtualizacao {
             }
 
             if (nr_pessoa < 0) {
+//                ResultSet rs_erro = new DAO().query(
+//                        "  SELECT ce.id AS id, \n "
+//                        + "       ce.ds_descricao AS descricao_erro \n "
+//                        + "  FROM soc_catraca_erro ce \n "
+//                        + " WHERE ce.nr_codigo = " + nr_pessoa
+//                );
                 ResultSet rs_erro = new DAO().query(
-                        "  SELECT ce.id AS id, \n "
-                        + "       ce.ds_descricao AS descricao_erro \n "
-                        + "  FROM soc_catraca_erro ce \n "
-                        + " WHERE ce.nr_codigo = " + nr_pessoa
+                        "  SELECT ce.codigo, \n "
+                        + "       ce.descricao_erro \n "
+                        + "  FROM vw_catraca_erro ce \n "
+                        + " WHERE ce.codigo = " + nr_pessoa
                 );
 
                 rs_erro.next();
@@ -183,10 +200,15 @@ public class EnviaAtualizacao {
                 return null;
             }
 
+//            ResultSet rs_cartao = new DAO().query(
+//                    "SELECT nr_cartao_posicao_via AS via, \n "
+//                    + "     nr_cartao_posicao_codigo AS codigo \n "
+//                    + " FROM conf_social"
+//            );
             ResultSet rs_cartao = new DAO().query(
-                    "SELECT nr_cartao_posicao_via AS via, \n "
-                    + "     nr_cartao_posicao_codigo AS codigo \n "
-                    + " FROM conf_social"
+                    "SELECT via, \n "
+                    + "     codigo \n "
+                    + " FROM vw_conf_social"
             );
             rs_cartao.next();
 
@@ -226,19 +248,30 @@ public class EnviaAtualizacao {
                     ResultSet rs_pessoa = null;
 
                     if (numero_via != 99) {
+//                        rs_pessoa = new DAO().query(
+//                                "SELECT s.ds_nome AS nome, \n "
+//                                + "     s.ds_foto_perfil AS foto \n "
+//                                + "FROM sis_pessoa s \n "
+//                                + "WHERE s.id = " + nr_retorno);
                         rs_pessoa = new DAO().query(
-                                "SELECT s.ds_nome AS nome, \n "
-                                + "     s.ds_foto_perfil AS foto \n "
-                                + "FROM sis_pessoa s \n "
-                                + "WHERE s.id = " + nr_retorno);
+                                "SELECT s.nome, \n "
+                                + "     s.foto \n "
+                                + "FROM vw_catraca_sis_pessoa s \n "
+                                + "WHERE s.codigo = " + nr_retorno
+                        );
 
                     } else {
+//                        rs_pessoa = new DAO().query(
+//                                "SELECT p.ds_nome AS nome, \n "
+//                                + "     f.ds_foto AS foto \n "
+//                                + "FROM pes_pessoa p \n "
+//                                + "INNER JOIN pes_fisica f ON f.id_pessoa = p.id \n "
+//                                + "WHERE p.id = " + nr_retorno);
                         rs_pessoa = new DAO().query(
-                                "SELECT p.ds_nome AS nome, \n "
-                                + "     f.ds_foto AS foto \n "
-                                + "FROM pes_pessoa p \n "
-                                + "INNER JOIN pes_fisica f ON f.id_pessoa = p.id \n "
-                                + "WHERE p.id = " + nr_retorno);
+                                "SELECT P.nome, \n "
+                                + "     P.foto \n "
+                                + "FROM vw_catraca_pessoa P \n "
+                                + "WHERE P.codigo = " + nr_retorno);
                     }
 
                     rs_pessoa.next();
@@ -275,25 +308,33 @@ public class EnviaAtualizacao {
             }
 
             if (nr_retorno < 0) {
+                // "SELECT id_pessoa FROM soc_carteirinha WHERE nr_cartao = " + nr_cartao
                 ResultSet rs_carteirinha = new DAO().query(
-                        "SELECT id_pessoa FROM soc_carteirinha WHERE nr_cartao = " + nr_cartao
+                        "SELECT id_pessoa FROM vw_carteirinha WHERE cartao = " + nr_cartao
                 );
                 rs_carteirinha.next();
 
                 Integer nr_pessoa = rs_carteirinha.getInt("id_pessoa");
+//
+//                ResultSet rs_pessoa = new DAO().query(
+//                        "SELECT p.ds_nome AS nome, \n "
+//                        + "     f.ds_foto AS foto \n "
+//                        + "FROM pes_pessoa p \n "
+//                        + "INNER JOIN pes_fisica f ON f.id_pessoa = p.id \n "
+//                        + "WHERE p.id = " + nr_pessoa);
 
                 ResultSet rs_pessoa = new DAO().query(
-                        "SELECT p.ds_nome AS nome, \n "
-                        + "     f.ds_foto AS foto \n "
-                        + "FROM pes_pessoa p \n "
-                        + "INNER JOIN pes_fisica f ON f.id_pessoa = p.id \n "
-                        + "WHERE p.id = " + nr_pessoa);
+                        "SELECT p.nome, \n "
+                        + "     p.foto \n "
+                        + "FROM vw_catraca_pessoa p \n "
+                        + "WHERE p.codigo = " + nr_pessoa);
                 rs_pessoa.next();
 
                 ResultSet rs_erro = new DAO().query(
                         "  SELECT ce.id AS id, \n "
                         + "       ce.ds_descricao AS descricao_erro \n "
-                        + "  FROM soc_catraca_erro ce \n "
+//                        + "  FROM soc_catraca_erro ce \n "
+                        + "  FROM vw_catraca_erro ce \n "                                
                         + " WHERE ce.nr_codigo = " + nr_retorno
                 );
 
@@ -315,24 +356,25 @@ public class EnviaAtualizacao {
         }
         return json;
     }
-
-    public static void ping(Integer catraca_id) {
-        try {
-            Random random = new Random();
-            Integer random_id = random.nextInt(10000000);
-            if (!isCaiu_conexao()) {
-                new DAO().query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = true WHERE id_catraca = " + catraca_id);
-            }
-        } catch (Exception e) {
-            e.getMessage();
-        }
-    }
+//
+//    public static void ping(Integer catraca_id) {
+//        try {
+//            Random random = new Random();
+//            Integer random_id = random.nextInt(10000000);
+//            if (!isCaiu_conexao()) {
+//                new DAO().query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = true WHERE id_catraca = " + catraca_id);
+//            }
+//        } catch (Exception e) {
+//            e.getMessage();
+//        }
+//    }
 
     public static void status(Integer catraca_id, Boolean ativo, String status) {
         if (!isCaiu_conexao()) {
             Random random = new Random();
             Integer random_id = random.nextInt(10000000);
-            new DAO().query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = " + ativo + ", ds_status = '" + status + "' WHERE id_catraca = " + catraca_id);
+            // new DAO().query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = " + ativo + ", ds_status = '" + status + "' WHERE id_catraca = " + catraca_id);
+            new DAO().query("select func_catraca_monitora_status(" + random_id + ", " + ativo + ", '" + status + "', " + catraca_id + ")");
         }
     }
 
@@ -347,28 +389,49 @@ public class EnviaAtualizacao {
     private static void atualiza_tela(Inner inner, RetornoJson json, Boolean limpar) {
         if (limpar) {
             if (!isCaiu_conexao()) {
-                new DAO().query_execute(
-                        "UPDATE soc_catraca_monitora \n "
-                        + " SET nr_pessoa = null, \n"
-                        + "     ds_mensagem = null, \n"
-                        + "     ds_nome = null, \n"
-                        + "     ds_foto = null, \n"
-                        + "     ds_observacao = null \n"
-                        //+ "     ds_status = 'Ativa' \n"
-                        + "WHERE id_catraca = " + inner.ObjectCatraca.getId()
+//                new DAO().query_execute(
+//                        "UPDATE soc_catraca_monitora \n "
+//                        + " SET nr_pessoa = null, \n"
+//                        + "     ds_mensagem = null, \n"
+//                        + "     ds_nome = null, \n"
+//                        + "     ds_foto = null, \n"
+//                        + "     ds_observacao = null \n"
+//                        //+ "     ds_status = 'Ativa' \n"
+//                        + "WHERE id_catraca = " + inner.ObjectCatraca.getId()
+//                );
+                new DAO().query(
+                        "SELECT func_catraca_monitora_tela("
+                        + "null, "
+                        + "null, "
+                        + "null, "
+                        + "null, "
+                        + "null, "
+                        + "false, "
+                        + "" + inner.ObjectCatraca.getId() + ""
+                        + ")"
                 );
             }
         } else {
             if (!isCaiu_conexao()) {
-                new DAO().query_execute(
-                        "UPDATE soc_catraca_monitora \n "
-                        + " SET nr_pessoa = " + json.getNr_pessoa() + ", \n"
-                        + "     ds_nome = '" + json.getNome() + "', \n"
-                        + "     ds_foto = '" + json.getFoto() + "', \n"
-                        + "     ds_observacao = '" + json.getObservacao() + "', \n"
-                        + "     ds_mensagem = '" + json.getMensagem() + "', \n"
-                        + "     is_liberado = " + json.getLiberado() + " \n"
-                        + "WHERE id_catraca = " + inner.ObjectCatraca.getId()
+//                new DAO().query_execute(
+//                        "UPDATE soc_catraca_monitora \n "
+//                        + " SET nr_pessoa = " + json.getNr_pessoa() + ", \n"
+//                        + "     ds_nome = '" + json.getNome() + "', \n"
+//                        + "     ds_foto = '" + json.getFoto() + "', \n"
+//                        + "     ds_observacao = '" + json.getObservacao() + "', \n"
+//                        + "     ds_mensagem = '" + json.getMensagem() + "', \n"
+//                        + "     is_liberado = " + json.getLiberado() + " \n"
+//                        + "WHERE id_catraca = " + inner.ObjectCatraca.getId()
+//                );
+                new DAO().query(
+                        "SELECT func_catraca_monitora_tela("
+                        + "" + json.getNr_pessoa() + ", "
+                        + "'" + json.getNome() + "', "
+                        + "'" + json.getFoto() + "', "
+                        + "'" + json.getObservacao() + "', "
+                        + "'" + json.getMensagem() + "', "
+                        + "" + json.getLiberado() + ", "
+                        + "" + inner.ObjectCatraca.getId() + ")"
                 );
             }
         }

@@ -540,7 +540,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     return;
                 }
 
-                ResultSet rs = query("SELECT * FROM pes_biometria WHERE is_ativo = true AND is_enviado = false AND ds_biometria <> '' AND ds_biometria2 <> ''");
+                ResultSet rs = query("SELECT * FROM vw_catraca_biometria  WHERE ativo = true AND enviado = false AND biometria1 <> '' AND biometria2 <> ''");
                 if (rs.next()) {
                     //form.get(0).getLblStatus().setText("Atualizando Biometrias");
                     loadBiometria();
@@ -756,19 +756,23 @@ public class EasyInnerCatracaControllerThread extends DAO {
                         switch (json.getVia()) {
                             case 99:
                                 if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
-                                    query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_sis_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                                    // query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_sis_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                                    query("SELECT func_catraca_frequencia(null, " + json.getNr_pessoa() + ", " + inner.ObjectCatraca.getDepartamento() + "," + es + ")");
                                 }
-                                query_execute("UPDATE conv_movimento SET is_ativo = false, dt_entrada = CURRENT_DATE WHERE id = " + json.getNr_pessoa() + " AND is_ativo = true;");
+                                // query_execute("UPDATE conv_movimento SET is_ativo = false, dt_entrada = CURRENT_DATE WHERE id = " + json.getNr_pessoa() + " AND is_ativo = true;");
+                                query("SELECT func_convite_movimento(" + json.getNr_pessoa() + ")");
                                 break;
                             default:
                                 if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
-                                    query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                                    // query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                                    query("SELECT func_catraca_frequencia(" + json.getNr_pessoa() + ", null, " + inner.ObjectCatraca.getDepartamento() + "," + es + ")");
                                 }
                                 break;
                         }
                     } else {
                         if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
-                            query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                            // query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
+                            query("SELECT func_catraca_frequencia(" + json.getNr_pessoa() + ", null, " + inner.ObjectCatraca.getDepartamento() + "," + es + ")");
                         }
                     }
 
@@ -1621,11 +1625,16 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 return null;
             }
             if (inner.ObjectCatraca.getVerificacao_de_liberacao()) {
+//                ResultSet rs_test = query(
+//                        "SELECT COUNT(*) AS qnt \n "
+//                        + " FROM soc_catraca_liberada cl \n"
+//                        + "INNER JOIN soc_catraca c ON c.id = cl.id_catraca\n"
+//                        + "WHERE c.nr_numero = " + inner.Numero
+//                );
                 ResultSet rs_test = query(
                         "SELECT COUNT(*) AS qnt \n "
-                        + " FROM soc_catraca_liberada cl \n"
-                        + "INNER JOIN soc_catraca c ON c.id = cl.id_catraca\n"
-                        + "WHERE c.nr_numero = " + inner.Numero
+                        + " FROM vw_catraca_liberada CL \n"
+                        + "WHERE CL.numero = " + inner.Numero
                 );
 
                 rs_test.next();
@@ -1635,7 +1644,8 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     if (!isActive()) {
                         return null;
                     }
-                    query_execute("DELETE FROM soc_catraca_liberada WHERE id_catraca = " + inner.ObjectCatraca.getId());
+                    // query_execute("DELETE FROM soc_catraca_liberada WHERE id_catraca = " + inner.ObjectCatraca.getId());
+                    query("SELECT func_catraca_liberada_delete(" + inner.ObjectCatraca.getId() + ")");
                 }
 
                 rs_test.close();
@@ -1643,12 +1653,18 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 if (!isActive()) {
                     return null;
                 }
+//                ResultSet rs = query(
+//                        "SELECT cl.nr_pessoa AS pessoa, \n "
+//                        + "      cl.ds_cartao AS cartao \n "
+//                        + " FROM soc_catraca_liberada cl \n"
+//                        + "INNER JOIN soc_catraca c ON c.id = cl.id_catraca\n"
+//                        + "WHERE c.nr_numero = " + inner.Numero
+//                );
                 ResultSet rs = query(
-                        "SELECT cl.nr_pessoa AS pessoa, \n "
-                        + "      cl.ds_cartao AS cartao \n "
-                        + " FROM soc_catraca_liberada cl \n"
-                        + "INNER JOIN soc_catraca c ON c.id = cl.id_catraca\n"
-                        + "WHERE c.nr_numero = " + inner.Numero
+                        "SELECT CL.nr_pessoa AS pessoa, \n "
+                        + "      CL.ds_cartao AS cartao \n "
+                        + " FROM vw_catraca_liberada CL \n"
+                        + "WHERE CL.numero = " + inner.Numero
                 );
 
                 rs.next();
@@ -1664,7 +1680,8 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     if (!isActive()) {
                         return null;
                     }
-                    query_execute("DELETE FROM soc_catraca_liberada WHERE id_catraca = " + inner.ObjectCatraca.getId());
+                    // query_execute("DELETE FROM soc_catraca_liberada WHERE id_catraca = " + inner.ObjectCatraca.getId());
+                    query("SELECT func_catraca_liberada_delete(" + inner.ObjectCatraca.getId() + ")");
 
                     rs.close();
                     return json_webservice;
@@ -1677,7 +1694,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     return null;
                 }
                 ResultSet rs = query(
-                        "SELECT id_pessoa AS pessoa FROM pes_biometria_catraca WHERE ds_ip = '" + inner.ObjectCatraca.getIP() + "'"
+                        "SELECT pessoa FROM vw_biometria_catraca WHERE ip = '" + inner.ObjectCatraca.getIP() + "'"
                 );
 
                 rs.next();
@@ -1692,7 +1709,8 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     if (!isActive()) {
                         return null;
                     }
-                    query_execute("DELETE FROM pes_biometria_catraca WHERE ds_ip = '" + inner.ObjectCatraca.getIP() + "'");
+                    //query_execute("DELETE FROM pes_biometria_catraca WHERE ds_ip = '" + inner.ObjectCatraca.getIP() + "'");
+                    query("SELECT func_biometria_catraca_delete('" + inner.ObjectCatraca.getIP() + "')");
 
                     rs.close();
 
@@ -1851,22 +1869,20 @@ public class EasyInnerCatracaControllerThread extends DAO {
 //        form.get(0).getColorPanel().setBackground(Color.GREEN);
     }
 
-    public void atualizaMonitoraCatraca(Boolean status, String descricao_status) {
-        Random random = new Random();
-        Integer random_id = random.nextInt(10000000);
-
-        if (isActive()) {
-            query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = " + status + ", ds_status = '" + descricao_status + "' WHERE id_catraca = " + inner.ObjectCatraca.getId());
-        }
-    }
-
-    public void atualizaAcessoCatraca(String mensagem) {
-
-        if (isActive()) {
-            query_execute("UPDATE soc_catraca_monitora SET ds_mensagem = '" + mensagem + "' WHERE id_catraca = " + inner.ObjectCatraca.getId());
-        }
-    }
-
+//    public void atualizaMonitoraCatraca(Boolean status, String descricao_status) {
+//        Random random = new Random();
+//        Integer random_id = random.nextInt(10000000);
+//
+//        if (isActive()) {
+//            query_execute("UPDATE soc_catraca_monitora SET nr_ping = " + random_id + ", is_ativo = " + status + ", ds_status = '" + descricao_status + "' WHERE id_catraca = " + inner.ObjectCatraca.getId());
+//        }
+//    }
+//    public void atualizaAcessoCatraca(String mensagem) {
+//
+//        if (isActive()) {
+//            query_execute("UPDATE soc_catraca_monitora SET ds_mensagem = '" + mensagem + "' WHERE id_catraca = " + inner.ObjectCatraca.getId());
+//        }
+//    }
     public boolean loadBiometria() {
         try {
             // INSERE OS USUÁRIOS NA MEMÓRIA DA CATRACA QUE ESTA ATIVO E NÃO ENVIADO
@@ -1875,7 +1891,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 return false;
             }
 
-            ResultSet rs = query("SELECT * FROM pes_biometria WHERE is_ativo = true AND is_enviado = false AND ds_biometria <> '' AND ds_biometria2 <> ''");
+            ResultSet rs = query("SELECT * FROM vw_catraca_biometria  WHERE ativo = true AND enviado = false AND biometria1 <> '' AND biometria2 <> ''");
 
             while (rs.next()) {
                 Integer id_usuario = rs.getInt("id_pessoa");
@@ -1920,7 +1936,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 return false;
             }
 
-            rs = query("SELECT id_pessoa FROM pes_biometria WHERE is_ativo = false AND is_enviado = true");
+            rs = query("SELECT id_pessoa FROM vw_catraca_biometria  WHERE ativo = false AND enviado = true");
 
             Integer r = 0;
             while (rs.next()) {
@@ -1968,7 +1984,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                                 return false;
                             }
 
-                            rs = query("SELECT * FROM pes_biometria WHERE id_pessoa = " + Integer.valueOf(Usuario.toString()) + " AND is_ativo = true");
+                            rs = query("SELECT * FROM vw_catraca_biometria WHERE id_pessoa = " + Integer.valueOf(Usuario.toString()) + " AND ativo = true");
                             r = 0;
                             if (!rs.next()) {
                                 r = easy_inner_thread.SolicitarExclusaoUsuario(inner.Numero, EasyInnerUtils.remZeroEsquerda(Usuario.toString()));
@@ -2638,8 +2654,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                         + "       p.ds_nome AS nome, \n "
                         + "       p.ds_documento AS documento, \n "
                         + "       f.ds_foto AS foto \n "
-                        + "  FROM pes_fisica f \n "
-                        + " INNER JOIN pes_pessoa p ON p.id = f.id_pessoa \n "
+                        + "  FROM vw_catraca_pessoa \n"
                         + " WHERE p.id = " + id_pessoa
                 );
 

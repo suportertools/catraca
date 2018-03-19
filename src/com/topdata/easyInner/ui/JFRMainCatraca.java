@@ -58,7 +58,8 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 DAO dao = new DAO();
                 String mac = Mac.getInstance();
                 if (dao.isActive()) {
-                    dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+                    // dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+                    dao.query("SELECT func_catraca_monitora(false, null, '" + mac + "')");
                 }
                 try {
                     new DAO().getConnection().close();
@@ -184,7 +185,8 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 DAO dao = new DAO();
                 String mac = Mac.getInstance();
                 if (dao.isActive()) {
-                    dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+                    // dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
+                    dao.query("SELECT func_catraca_monitora(false, null, '" + mac + "')");
                 }
                 try {
                     new DAO().getConnection().close();
