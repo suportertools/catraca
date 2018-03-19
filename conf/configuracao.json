@@ -5,7 +5,5 @@
     "postgres_banco": "ComercioLimeira",
     "postgres_cliente": "ComercioLimeira",
     "postgres_porta": "5432",
-    "servidor_monitor": "sindical.rtools.com.br:7078",
-    "web_service": false,
-    "web_service_sobre": "Caso habilitar editar web_service.conf"
+    "servidor_monitor": "sindical.rtools.com.br:7078"
 }

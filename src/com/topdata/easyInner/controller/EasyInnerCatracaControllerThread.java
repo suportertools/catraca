@@ -757,7 +757,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                             case 99:
                                 if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
                                     // query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_sis_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
-                                    query("SELECT func_catraca_frequencia(null, " + json.getNr_pessoa() + ", " + inner.ObjectCatraca.getDepartamento() + "," + es + ")");
+                                    query("SELECT func_catraca_frequencia(null, " + json.getNr_pessoa() + ", " + inner.ObjectCatraca.getDepartamento() + ", '" + es + "')");
                                 }
                                 // query_execute("UPDATE conv_movimento SET is_ativo = false, dt_entrada = CURRENT_DATE WHERE id = " + json.getNr_pessoa() + " AND is_ativo = true;");
                                 query("SELECT func_convite_movimento(" + json.getNr_pessoa() + ")");
@@ -765,14 +765,14 @@ public class EasyInnerCatracaControllerThread extends DAO {
                             default:
                                 if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
                                     // query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
-                                    query("SELECT func_catraca_frequencia(" + json.getNr_pessoa() + ", null, " + inner.ObjectCatraca.getDepartamento() + "," + es + ")");
+                                    query("SELECT func_catraca_frequencia(" + json.getNr_pessoa() + ", null, " + inner.ObjectCatraca.getDepartamento() + ", '" + es + "')");
                                 }
                                 break;
                         }
                     } else {
                         if (inner.ObjectCatraca.getGrava_frequencia_catraca()) {
                             // query_execute("INSERT INTO soc_catraca_frequencia (dt_acesso, ds_hora_acesso, id_departamento, id_pessoa, ds_es) VALUES (CURRENT_DATE, to_char(LOCALTIME(0), 'HH24:MI'), " + inner.ObjectCatraca.getDepartamento() + ", " + json.getNr_pessoa() + ", '" + es + "');");
-                            query("SELECT func_catraca_frequencia(" + json.getNr_pessoa() + ", null, " + inner.ObjectCatraca.getDepartamento() + "," + es + ")");
+                            query("SELECT func_catraca_frequencia(" + json.getNr_pessoa() + ", null, " + inner.ObjectCatraca.getDepartamento() + ", '" + es + "')");
                         }
                     }
 

@@ -93,7 +93,7 @@ public class EnviaAtualizacao {
                             "  SELECT P.nome,             \n "
                             + "       P.foto              \n "
                             + "  FROM vw_catraca_pessoa P \n "
-                            + " WHERE P.id = " + nr_pessoa);
+                            + " WHERE P.codigo = " + nr_pessoa);
                     try {
                         rs_pessoa.next();
                         //  VERIFICA SE O CÓDIGO ENVIADO É VÁLIDO
@@ -146,7 +146,7 @@ public class EnviaAtualizacao {
                                 rs_pessoa.getString("nome"),
                                 rs_pessoa.getString("foto"),
                                 "",
-                                rs_erro.getInt("id"),
+                                rs_erro.getInt("codigo"),
                                 rs_erro.getString("descricao_erro"),
                                 null,
                                 false
@@ -177,7 +177,7 @@ public class EnviaAtualizacao {
                         "",
                         "",
                         "",
-                        rs_erro.getInt("id"),
+                        rs_erro.getInt("codigo"),
                         rs_erro.getString("descricao_erro"),
                         null,
                         false
