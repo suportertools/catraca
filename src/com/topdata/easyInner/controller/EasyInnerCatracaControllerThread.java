@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import javax.sound.sampled.LineUnavailableException;
+import javax.swing.JOptionPane;
 
 public class EasyInnerCatracaControllerThread extends DAO {
 
@@ -584,6 +585,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     case 1:
                         // TECLADO CATRACA
                         json = RetornaPessoaCatraca(Integer.valueOf(NumCartao), null);
+                        // JOptionPane.showMessageDialog(null, "TECLADO CATRACA");
                         break;
                     case 2:
                         // CARTÃO DA CATRACA
@@ -592,11 +594,14 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     case 12:
                     case 18:
                         // BIOMETRIA DA CATRACA
+                        // JOptionPane.showMessageDialog(null, "BIOMETRIA DA CATRACA");
                         if (DadosOnLine[0] == 12) {
                             // RETORNO JÁ É O CÓDIGO DA PESSOA
+                            // JOptionPane.showMessageDialog(null, "RETORNO JÁ É O CÓDIGO DA PESSOA");
                             json = RetornaPessoaCatraca(Integer.valueOf(NumCartao), null);
                         } else {
                             // CONVERTE A BIOMETRIA CAPTURADA PARA ENCONTRAR O CÓDIGO
+                            // JOptionPane.showMessageDialog(null, "CONVERTE A BIOMETRIA CAPTURADA PARA ENCONTRAR O CÓDIGO");
                         }
                         break;
                     default:
@@ -605,6 +610,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
 
                 if (json != null) {
                     if (!json.getLiberado()) {
+                        // JOptionPane.showMessageDialog(null, "Enumeradores.EstadosInner.ESTADO_ENVIAR_MENSAGEM_ACESSO_NEGADO " + json.getNr_pessoa());
                         inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_ENVIAR_MENSAGEM_ACESSO_NEGADO;
                     } else {
                         LiberaCatraca(json);
@@ -1423,7 +1429,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                         inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_LIBERAR_CATRACA;
                         break;
                 }
-
+                // JOptionPane.showMessageDialog(null, "EnviaAtualizacao.atualiza_tela(inner, json)");
                 EnviaAtualizacao.atualiza_tela(inner, json);
             }
         } else {
@@ -1609,6 +1615,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
     }
 
     public RetornoJson RetornaPessoaCatraca(Integer pessoa_id, String numero_cartao) {
+        // JOptionPane.showMessageDialog(null, "RetornaPessoaCatraca");
         RetornoJson json_webservice;
         if (pessoa_id != null) {
             json_webservice = EnviaAtualizacao.webservice(pessoa_id, inner);
@@ -1742,6 +1749,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
             }
         } catch (SQLException e) {
             System.out.println("Exception 29: " + e.getMessage());
+            // JOptionPane.showMessageDialog(null, "Exception 29: " + e.getMessage());
             return null;
         }
         return null;

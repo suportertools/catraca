@@ -1,9 +1,0 @@
-{
-    "postgres_ip": "sinecol.ddns.net",
-    "postgres_usuario": "catraca",
-    "postgres_senha": "3$tr3l4d0m4r",
-    "postgres_banco": "ComercioLimeira",
-    "postgres_cliente": "ComercioLimeira",
-    "postgres_porta": "5432",
-    "servidor_monitor": "sindical.rtools.com.br:7078"
-}

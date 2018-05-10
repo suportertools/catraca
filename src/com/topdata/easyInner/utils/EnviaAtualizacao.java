@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
+import javax.swing.JOptionPane;
 
 public class EnviaAtualizacao {
 
@@ -24,6 +25,7 @@ public class EnviaAtualizacao {
     }
 
     public static RetornoJson webservice(Integer id_pessoa, String cartao, Inner inner) {
+        // JOptionPane.showMessageDialog(null, "webservice - id_pessoa " + id_pessoa + " - cartao " + cartao);
         if (id_pessoa != null) {
             return retorna_pessoa_funcao(id_pessoa, inner);
         } else {
@@ -54,6 +56,7 @@ public class EnviaAtualizacao {
             if (nr_pessoa >= 0) {
                 if (nr_pessoa == 0) {
                     //  LIBERA A CATRACA PARA VISITANTE
+                    //JOptionPane.showMessageDialog(null, "retorna_pessoa_funcao LIBERA A CATRACA PARA VISITANTE");
                     json = new RetornoJson(
                             nr_pessoa,
                             "VISITANTE",
@@ -66,6 +69,7 @@ public class EnviaAtualizacao {
                     );
                 } else {
                     // FUNÇÃO PARA VERIFICAÇÃO DA PESSOA (SE FOR LIBERADA OU NÃO)
+                    //JOptionPane.showMessageDialog(null, "retorna_pessoa_funcao  FUNÇÃO PARA VERIFICAÇÃO DA PESSOA (SE FOR LIBERADA OU NÃO)");
                     ResultSet rs_funcao = new DAO().query("SELECT func_catraca(" + nr_pessoa + ", " + inner.ObjectCatraca.getDepartamento() + ", 2, null) AS retorno");
                     try {
                         rs_funcao.next();
@@ -98,6 +102,7 @@ public class EnviaAtualizacao {
                         rs_pessoa.next();
                         //  VERIFICA SE O CÓDIGO ENVIADO É VÁLIDO
                         rs_pessoa.getString("nome");
+                        //JOptionPane.showMessageDialog(null, "retorna_pessoa_funcao " + rs_pessoa.getString("nome"));
                     } catch (Exception e) {
                         json = new RetornoJson(
                                 nr_pessoa,
@@ -114,6 +119,7 @@ public class EnviaAtualizacao {
 
                     // SE O RETORNO DA FUNÇÃO FOR LIBERADA
                     if (rs_funcao.getInt("retorno") > 0) {
+                        //JOptionPane.showMessageDialog(null, "Catraca Liberada" + rs_pessoa.getString("nome"));
                         json = new RetornoJson(
                                 nr_pessoa,
                                 rs_pessoa.getString("nome"),
@@ -139,6 +145,7 @@ public class EnviaAtualizacao {
                                 + " WHERE ce.codigo = " + rs_funcao.getInt("retorno")
                         );
 
+                        //JOptionPane.showMessageDialog(null, "rs_erro");
                         rs_erro.next();
 
                         json = new RetornoJson(
@@ -156,7 +163,9 @@ public class EnviaAtualizacao {
                 }
             }
 
+            //JOptionPane.showMessageDialog(null, "(nr_retorno < 0) ");
             if (nr_pessoa < 0) {
+                //JOptionPane.showMessageDialog(null, "(nr_retorno < 0 = true) ");
 //                ResultSet rs_erro = new DAO().query(
 //                        "  SELECT ce.id AS id, \n "
 //                        + "       ce.ds_descricao AS descricao_erro \n "
@@ -172,6 +181,7 @@ public class EnviaAtualizacao {
 
                 rs_erro.next();
 
+                //JOptionPane.showMessageDialog(null, "err " + rs_erro.getInt("codigo") + " nr_pessoa " + nr_pessoa);
                 json = new RetornoJson(
                         nr_pessoa,
                         "",
@@ -191,6 +201,7 @@ public class EnviaAtualizacao {
     }
 
     private static RetornoJson retorna_catraca_funcao(String cartao, Inner inner) {
+        // JOptionPane.showMessageDialog(null, "retorna_catraca_funcao");
         // 8 É O NÚMERO MÍNIMO DE CARACTÉRES PARA O CÓDIGO
         // 8 ESTA DEFINIDO 8 TAMBÉM NO SINDICAL WEB
         // INDICE FINAL SEMPRE - 1 ex 8 - 1 = 7
@@ -223,6 +234,7 @@ public class EnviaAtualizacao {
 
             ResultSet rs_funcao;
             if (numero_via != 99) {
+                // JOptionPane.showMessageDialog(null, "!= 99");
                 rs_funcao = new DAO().query("SELECT func_catraca(" + nr_cartao + "," + inner.ObjectCatraca.getDepartamento() + ", 1, " + numero_via + ") AS retorno");
             } else {
                 rs_funcao = new DAO().query("SELECT func_catraca(" + nr_cartao + "," + inner.ObjectCatraca.getDepartamento() + ", 3, null) AS retorno");
@@ -234,6 +246,7 @@ public class EnviaAtualizacao {
             if (nr_retorno >= 0) {
                 if (nr_retorno == 0) {
                     //  LIBERA A CATRACA PARA VISITANTE
+                    // JOptionPane.showMessageDialog(null, "VISITANTE");
                     json = new RetornoJson(
                             nr_retorno,
                             "VISITANTE",
@@ -246,8 +259,8 @@ public class EnviaAtualizacao {
                     );
                 } else {
                     ResultSet rs_pessoa = null;
-
-                    if (numero_via != 99) {
+                    // VIA SE FOR CONVITE CLUBE A VIA É 99
+                    if (numero_via == 99) {
 //                        rs_pessoa = new DAO().query(
 //                                "SELECT s.ds_nome AS nome, \n "
 //                                + "     s.ds_foto_perfil AS foto \n "
@@ -267,6 +280,7 @@ public class EnviaAtualizacao {
 //                                + "FROM pes_pessoa p \n "
 //                                + "INNER JOIN pes_fisica f ON f.id_pessoa = p.id \n "
 //                                + "WHERE p.id = " + nr_retorno);
+                        // JOptionPane.showMessageDialog(null, "vw_catraca_pessoa");
                         rs_pessoa = new DAO().query(
                                 "SELECT P.nome, \n "
                                 + "     P.foto \n "
@@ -280,6 +294,7 @@ public class EnviaAtualizacao {
                         //  VERIFICA SE O CÓDIGO ENVIADO É VÁLIDO
                         rs_pessoa.getString("nome");
                     } catch (Exception e) {
+                        // JOptionPane.showMessageDialog(null, "err vw_catraca_pessoa " + e.getMessage());
                         json = new RetornoJson(
                                 nr_retorno,
                                 "",
@@ -293,6 +308,7 @@ public class EnviaAtualizacao {
                         return json;
                     }
 
+                    // JOptionPane.showMessageDialog(null, "retorna pessoa" + rs_pessoa.getString("nome"));
                     json = new RetornoJson(
                             nr_retorno,
                             rs_pessoa.getString("nome"),
@@ -307,7 +323,9 @@ public class EnviaAtualizacao {
                 }
             }
 
+            //JOptionPane.showMessageDialog(null, "(nr_retorno < 0) ");
             if (nr_retorno < 0) {
+                //JOptionPane.showMessageDialog(null, "(nr_retorno < 0) - sim ");
                 // "SELECT id_pessoa FROM soc_carteirinha WHERE nr_cartao = " + nr_cartao
                 ResultSet rs_carteirinha = new DAO().query(
                         "SELECT id_pessoa FROM vw_carteirinha WHERE cartao = " + nr_cartao
@@ -331,11 +349,11 @@ public class EnviaAtualizacao {
                 rs_pessoa.next();
 
                 ResultSet rs_erro = new DAO().query(
-                        "  SELECT ce.id AS id, \n "
-                        + "       ce.ds_descricao AS descricao_erro \n "
-//                        + "  FROM soc_catraca_erro ce \n "
-                        + "  FROM vw_catraca_erro ce \n "                                
-                        + " WHERE ce.nr_codigo = " + nr_retorno
+                        "  SELECT ce.codigo, \n "
+                        + "       ce.descricao_erro \n "
+                        //                        + "  FROM soc_catraca_erro ce \n "
+                        + "  FROM vw_catraca_erro ce \n "
+                        + " WHERE ce.codigo = " + nr_retorno
                 );
 
                 rs_erro.next();
@@ -345,13 +363,14 @@ public class EnviaAtualizacao {
                         rs_pessoa.getString("nome"),
                         rs_pessoa.getString("foto"),
                         "",
-                        rs_erro.getInt("id"),
+                        rs_erro.getInt("codigo"),
                         rs_erro.getString("descricao_erro"),
                         numero_via,
                         false
                 );
             }
         } catch (SQLException | NumberFormatException e) {
+            //JOptionPane.showMessageDialog(null, "e 1" + e.getMessage());
             e.getMessage();
         }
         return json;

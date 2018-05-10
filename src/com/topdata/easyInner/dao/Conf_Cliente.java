@@ -40,7 +40,7 @@ public class Conf_Cliente {
             } catch (JSONException e) {
                 this.postgres_porta = "5432";
             }
-            
+
 //            if (this.postgres_senha.isEmpty()) {
 //                if (postgres_banco.equals("Sindical")) {
 //                    this.postgres_senha = "989899";
