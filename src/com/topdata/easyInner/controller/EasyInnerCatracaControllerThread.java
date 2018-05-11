@@ -1618,9 +1618,9 @@ public class EasyInnerCatracaControllerThread extends DAO {
         // JOptionPane.showMessageDialog(null, "RetornaPessoaCatraca");
         RetornoJson json_webservice;
         if (pessoa_id != null) {
-            json_webservice = EnviaAtualizacao.webservice(pessoa_id, inner);
+            json_webservice = EnviaAtualizacao.webservice(pessoa_id, inner.ObjectCatraca.getDepartamento(), inner);
         } else {
-            json_webservice = EnviaAtualizacao.webservice(numero_cartao, inner);
+            json_webservice = EnviaAtualizacao.webservice(numero_cartao, inner.ObjectCatraca.getDepartamento(), inner);
         }
         return json_webservice;
     }
@@ -1679,9 +1679,9 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 RetornoJson json_webservice = null;
                 if (rs.getRow() > 0) {
                     if (rs.getObject("pessoa") != null) {
-                        json_webservice = EnviaAtualizacao.webservice(rs.getInt("pessoa"), inner);
+                        json_webservice = EnviaAtualizacao.webservice(rs.getInt("pessoa"), inner.ObjectCatraca.getDepartamento(), inner);
                     } else {
-                        json_webservice = EnviaAtualizacao.webservice(rs.getString("cartao"), inner);
+                        json_webservice = EnviaAtualizacao.webservice(rs.getString("cartao"), inner.ObjectCatraca.getDepartamento(), inner);
                     }
 
                     if (!isActive()) {
@@ -1710,7 +1710,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
 
                 if (rs.getRow() > 0) {
                     if (rs.getObject("pessoa") != null) {
-                        json_webservice = EnviaAtualizacao.webservice(rs.getInt("pessoa"), inner);
+                        json_webservice = EnviaAtualizacao.webservice(rs.getInt("pessoa"), inner.ObjectCatraca.getDepartamento(), inner);
                     }
 
                     if (!isActive()) {

@@ -4,9 +4,12 @@ import com.topdata.easyInner.controller.EasyInnerCatracaController;
 import com.topdata.easyInner.dao.DAO;
 import com.topdata.easyInner.utils.Block;
 import com.topdata.easyInner.utils.BlockInterface;
+import com.topdata.easyInner.utils.Debugs;
 import com.topdata.easyInner.utils.EnviaAtualizacao;
 import com.topdata.easyInner.utils.Mac;
 import com.topdata.easyInner.utils.Path;
+import com.topdata.easyInner.utils.Ping;
+import com.topdata.easyInner.utils.Preloader;
 import java.awt.AWTException;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -35,14 +38,48 @@ import javax.swing.Timer;
 public final class JFRMainCatraca extends JFrame implements ActionListener {
 
     private Timer timer = null;
-
     private JLabel lblRelogio = new JLabel();
-
     private JLabel lblStatus = new JLabel("Iniciando Projeto");
-
     private ActionEvent ae = null;
+    private final Preloader preloader;
+
+    public static void main(String[] args) {
+        Ping.execute();
+        Block.TYPE = "servico_catraca";
+        if (!Block.registerInstance()) {
+            // instance already running.
+            System.out.println("Another instance of this application is already running.  Exiting.");
+            JOptionPane.showMessageDialog(null, "Aplicação já esta em execução");
+            System.exit(0);
+        }
+        Block.setBlockInterface(new BlockInterface() {
+            @Override
+            public void newInstanceCreated() {
+                System.out.println("New instance detected...");
+                // this is where your handler code goes...
+            }
+        });
+        EasyInnerCatracaController innerCatracaController = new EasyInnerCatracaController(new JFRMainCatraca());
+        innerCatracaController.run();
+    }
 
     public JFRMainCatraca() {
+
+        preloader = new Preloader();
+        preloader.setAppTitle("Dispostivo - " + "Catraca");
+        preloader.setAppStatus("Iniciando...");
+        preloader.setShowIcon(true);
+        preloader.setWaitingStarted(true);
+        preloader.show();
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+
+                System.exit(0);
+            }
+        });
+        preloader.reloadStatus("Verificando se computador é registrado...");
+
         JPanel panel = new JPanel(new GridLayout(0, 1));
 
         panel.add(lblRelogio);
@@ -69,15 +106,17 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 System.exit(0);
             }
         });
-
+        preloader.reloadStatus("Aplicação em execução na bandeja do windows.");
         lblStatus.setText("Projeto em Execução");
+        preloader.hide();
     }
 
     public void criar_SystemTray() {
         try {
             SystemTray tray = SystemTray.getSystemTray();
             String path = Path.getRealPath();
-            TrayIcon trayIcon = new TrayIcon(new ImageIcon(path + File.separator + "images" + File.separator + "catraca-icon.png").getImage(), "Catraca v5");
+//            TrayIcon trayIcon = new TrayIcon(new ImageIcon(path + File.separator + "images" + File.separator + "catraca-icon.png").getImage(), "Catraca v5");
+            TrayIcon trayIcon = new TrayIcon(new ImageIcon(Path.getRealPath() + File.separator + "src" + File.separator + "resources" + File.separator + "images" + File.separator + "frame_icon.png").getImage(), "Catraca v5");
 
             trayIcon.addActionListener(Action_Tray());
 
@@ -97,7 +136,7 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
 
                 frame.setAutoRequestFocus(true);
                 frame.setLayout(null);
-                frame.setBounds(0, 0, 450, 180);
+                frame.setBounds(0, 0, 650, 180);
                 frame.setResizable(false);
 
                 Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -111,6 +150,10 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 button_sair.addActionListener(Action_Sair());
                 button_sair.setBounds(220, 100, 200, 30);
 
+                JButton button_debug = new JButton("Depurar");
+                button_debug.addActionListener(Action_Debug(frame));
+                button_debug.setBounds(440, 100, 200, 30);
+
                 lblRelogio.setBounds(10, 10, 500, 50);
                 lblRelogio.setFont(new Font(null, Font.PLAIN, 20));
 
@@ -119,6 +162,7 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
 
                 frame.add(button_esconder);
                 frame.add(button_sair);
+                frame.add(button_debug);
                 frame.add(lblRelogio);
                 frame.add(lblStatus);
 
@@ -220,23 +264,18 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
         return action_esconder;
     }
 
-    public static void main(String[] args) {
-        Block.TYPE = "servico_catraca";
-        if (!Block.registerInstance()) {
-            // instance already running.
-            System.out.println("Another instance of this application is already running.  Exiting.");
-            JOptionPane.showMessageDialog(null, "Aplicação já esta em execução");
-            System.exit(0);
-        }
-        Block.setBlockInterface(new BlockInterface() {
+    public ActionListener Action_Debug(final JFrame frame) {
+        ActionListener action_esconder = new ActionListener() {
             @Override
-            public void newInstanceCreated() {
-                System.out.println("New instance detected...");
-                // this is where your handler code goes...
+            public void actionPerformed(ActionEvent e) {
+                Debugs.ON = !Debugs.ON;
+                frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
             }
-        });
-        EasyInnerCatracaController innerCatracaController = new EasyInnerCatracaController(new JFRMainCatraca());
-        innerCatracaController.run();
+        };
+//        ActionListener action_esconder = (ActionEvent e) -> {
+//            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+//        };
+        return action_esconder;
     }
 
     public void disparaRelogio() {

@@ -1,5 +1,6 @@
 package com.topdata.easyInner.dao;
 
+import com.topdata.easyInner.utils.Debugs;
 import com.topdata.easyInner.utils.Logs;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -33,7 +34,7 @@ public class DAO {
                 return conn;
             }
         } catch (SQLException e) {
-            // new Logs().save("database", "Problemas com a base de dados!!!! SQLException: " + e.getMessage());
+            Debugs.breakPoint("SQLException e " + e.getMessage());
             try {
                 Thread.sleep(1000 * 60 * 5);
             } catch (Exception e5) {
@@ -53,7 +54,7 @@ public class DAO {
                 return rs;
             }
         } catch (SQLException e) {
-            e.getMessage();
+            Debugs.breakPoint("query SQLException " + e.getMessage());
         }
         return null;
     }
@@ -67,7 +68,7 @@ public class DAO {
 //                getStatement().getConnection().close();
             }
         } catch (SQLException e) {
-            e.getMessage();
+            Debugs.breakPoint("query_execute SQLException " + e.getMessage());
         }
     }
 
@@ -110,7 +111,7 @@ public class DAO {
                 ps.executeQuery();
                 return true;
             } catch (SQLException e) {
-                System.err.println("Erro de conexão: " + e.getMessage());
+                Debugs.breakPoint("isActive " + e.getMessage());
                 if (e.getMessage().toLowerCase().contains("connection has been closed")) {
                     try {
                         Thread.sleep(1000 * 60 * 1);
