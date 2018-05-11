@@ -11,6 +11,7 @@ import com.topdata.easyInner.utils.Path;
 import com.topdata.easyInner.utils.Ping;
 import com.topdata.easyInner.utils.Preloader;
 import java.awt.AWTException;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -33,6 +34,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
 public final class JFRMainCatraca extends JFrame implements ActionListener {
@@ -42,6 +45,9 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
     private JLabel lblStatus = new JLabel("Iniciando Projeto");
     private ActionEvent ae = null;
     private final Preloader preloader;
+    private JButton button_debug;
+    private JButton button_impl_codigo;
+    private JButton button_impl_cartao;
 
     public static void main(String[] args) {
         Ping.execute();
@@ -132,11 +138,12 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFrame frame = new JFrame();
+                frame.setIconImage(new ImageIcon(Path.getRealPath() + File.separator + "src" + File.separator + "resources" + File.separator + "images" + File.separator + "frame_icon.png").getImage());
                 frame.setTitle("Catraca v5");
 
                 frame.setAutoRequestFocus(true);
                 frame.setLayout(null);
-                frame.setBounds(0, 0, 650, 180);
+                frame.setBounds(0, 0, 450, 260);
                 frame.setResizable(false);
 
                 Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -146,23 +153,34 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 button_esconder.addActionListener(Action_Esconder(frame));
                 button_esconder.setBounds(10, 100, 200, 30);
 
-                JButton button_sair = new JButton("Sair do Sistema");
+                JButton button_sair = new JButton("Sair da Aplicação");
                 button_sair.addActionListener(Action_Sair());
                 button_sair.setBounds(220, 100, 200, 30);
 
-                JButton button_debug = new JButton("Depurar");
+                button_debug = new JButton("Depurar");
                 button_debug.addActionListener(Action_Debug(frame));
-                button_debug.setBounds(440, 100, 200, 30);
+                button_debug.setBounds(10, 150, 80, 30);
+
+                button_impl_cartao = new JButton("Cartão");
+                button_impl_cartao.addActionListener(Action_Impl_Codigo(frame));
+                button_impl_cartao.setBounds(180, 150, 80, 30);
+                button_impl_cartao.setEnabled(false);
+
+                button_impl_codigo = new JButton("Código");
+                button_impl_codigo.addActionListener(Action_Impl_Cartao(frame));
+                button_impl_codigo.setBounds(340, 150, 80, 30);
 
                 lblRelogio.setBounds(10, 10, 500, 50);
                 lblRelogio.setFont(new Font(null, Font.PLAIN, 20));
 
                 lblStatus.setBounds(10, 50, 500, 50);
                 lblStatus.setFont(new Font(null, Font.PLAIN, 20));
-
                 frame.add(button_esconder);
                 frame.add(button_sair);
+                frame.add(new JSeparator(SwingConstants.HORIZONTAL));
                 frame.add(button_debug);
+                frame.add(button_impl_cartao);
+                frame.add(button_impl_codigo);
                 frame.add(lblRelogio);
                 frame.add(lblStatus);
 
@@ -172,6 +190,9 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                         EnviaAtualizacao.inativar_todas_catracas();
                     }
                 });
+
+                button_impl_cartao.setEnabled(Debugs.ON);
+                button_impl_codigo.setEnabled(Debugs.ON);
 
                 frame.setVisible(true);
             }
@@ -270,6 +291,62 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 Debugs.ON = !Debugs.ON;
                 frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+            }
+        };
+//        ActionListener action_esconder = (ActionEvent e) -> {
+//            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+//        };
+        return action_esconder;
+    }
+
+    public ActionListener Action_Impl_Cartao(final JFrame frame) {
+        ActionListener action_esconder = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!Debugs.ON) {
+                    JOptionPane.showMessageDialog(null, "Habiltiar o modo de depuração");
+                    return;
+                }
+                String depto = "12";
+                try {
+                    depto = JOptionPane.showInputDialog(null, "Depto");
+                } catch (Exception e2) {
+
+                }
+                String response = JOptionPane.showInputDialog(null, "Código");
+                try {
+                    EnviaAtualizacao.webservice(null, response, Integer.parseInt(depto), null);
+                } catch (Exception e2) {
+
+                }
+            }
+        };
+//        ActionListener action_esconder = (ActionEvent e) -> {
+//            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+//        };
+        return action_esconder;
+    }
+
+    public ActionListener Action_Impl_Codigo(final JFrame frame) {
+        ActionListener action_esconder = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!Debugs.ON) {
+                    JOptionPane.showMessageDialog(null, "Habiltiar o modo de depuração");
+                    return;
+                }
+                String depto = "12";
+                try {
+                    depto = JOptionPane.showInputDialog(null, "Depto");
+                } catch (Exception e2) {
+
+                }
+                String response = JOptionPane.showInputDialog(null, "Código");
+                try {
+                    EnviaAtualizacao.webservice(Integer.parseInt(response), Integer.parseInt(depto), null);
+                } catch (Exception e2) {
+
+                }
             }
         };
 //        ActionListener action_esconder = (ActionEvent e) -> {
