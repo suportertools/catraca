@@ -317,4 +317,12 @@ public class EasyInnerCatracaController extends DAO {
 ////        }
 //    }
 
+    public List<Catraca> getLista_catraca() {
+        return lista_catraca;
+    }
+
+    public void setLista_catraca(List<Catraca> lista_catraca) {
+        this.lista_catraca = lista_catraca;
+    }
+
 }

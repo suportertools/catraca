@@ -15,20 +15,16 @@ import java.util.Random;
 
 public class EnviaAtualizacao {
 
-    public static RetornoJson webservice(Integer id_pessoa, Integer departamento_id, Inner inner) {
-        return webservice(id_pessoa, null, departamento_id, inner);
+    public static RetornoJson webservice(Integer id_pessoa, Integer departamento_id, Integer inner_numero) {
+        return webservice(id_pessoa, null, departamento_id, inner_numero);
     }
 
-    public static RetornoJson webservice(String cartao, Integer departamento_id, Inner inner) {
-        return webservice(null, cartao, departamento_id, inner);
+    public static RetornoJson webservice(String cartao, Integer departamento_id, Integer inner_numero) {
+        return webservice(null, cartao, departamento_id, inner_numero);
     }
 
-    public static RetornoJson webservice(Integer id_pessoa, String cartao, Integer departamento_id, Inner inner) {
-        if (inner == null) {
-            Debugs.breakPoint("Catraca Test");
-        } else {
-            Debugs.breakPoint("Catraca nº" + inner.Numero);
-        }
+    public static RetornoJson webservice(Integer id_pessoa, String cartao, Integer departamento_id, Integer inner_numero) {
+        Debugs.breakPoint("Catraca nº" + inner_numero);
         if (id_pessoa != null) {
             return retorna_pessoa_funcao(id_pessoa, departamento_id);
         } else {
@@ -347,7 +343,60 @@ public class EnviaAtualizacao {
         atualiza_tela(inner, json, false);
     }
 
-    private static void atualiza_tela(Inner inner, RetornoJson json, Boolean limpar) {
+    public static void atualiza_tela(Inner inner, RetornoJson json, Boolean limpar) {
+//        if (limpar) {
+//            if (!isCaiu_conexao()) {
+////                new DAO().query_execute(
+////                        "UPDATE soc_catraca_monitora \n "
+////                        + " SET nr_pessoa = null, \n"
+////                        + "     ds_mensagem = null, \n"
+////                        + "     ds_nome = null, \n"
+////                        + "     ds_foto = null, \n"
+////                        + "     ds_observacao = null \n"
+////                        //+ "     ds_status = 'Ativa' \n"
+////                        + "WHERE id_catraca = " + inner.ObjectCatraca.getId()
+////                );
+//                new DAO().query(
+//                        "SELECT func_catraca_monitora_tela("
+//                        + "null, "
+//                        + "null, "
+//                        + "null, "
+//                        + "null, "
+//                        + "null, "
+//                        + "false, "
+//                        + "" + inner.ObjectCatraca.getId() + ""
+//                        + ")"
+//                );
+//            }
+//        } else {
+//            if (!isCaiu_conexao()) {
+////                new DAO().query_execute(
+////                        "UPDATE soc_catraca_monitora \n "
+////                        + " SET nr_pessoa = " + json.getNr_pessoa() + ", \n"
+////                        + "     ds_nome = '" + json.getNome() + "', \n"
+////                        + "     ds_foto = '" + json.getFoto() + "', \n"
+////                        + "     ds_observacao = '" + json.getObservacao() + "', \n"
+////                        + "     ds_mensagem = '" + json.getMensagem() + "', \n"
+////                        + "     is_liberado = " + json.getLiberado() + " \n"
+////                        + "WHERE id_catraca = " + inner.ObjectCatraca.getId()
+////                );
+//                new DAO().query(
+//                        "SELECT func_catraca_monitora_tela("
+//                        + "" + json.getNr_pessoa() + ", "
+//                        + "'" + json.getNome() + "', "
+//                        + "'" + json.getFoto() + "', "
+//                        + "'" + json.getObservacao() + "', "
+//                        + "'" + json.getMensagem() + "', "
+//                        + "" + json.getLiberado() + ", "
+//                        + "" + inner.ObjectCatraca.getId() + ")"
+//                );
+//            }
+//        }
+        // enviarAtualizacaoTelaCatraca(inner);
+        atualiza_tela(inner.ObjectCatraca.getCliente(), inner.ObjectCatraca.getServidor(), inner.Numero, inner.ObjectCatraca.getId(), json, limpar);
+    }
+
+    public static void atualiza_tela(String cliente, Integer servidor_numero, Integer inner_numero, Integer catraca_id, RetornoJson json, Boolean limpar) {
         if (limpar) {
             if (!isCaiu_conexao()) {
 //                new DAO().query_execute(
@@ -368,7 +417,7 @@ public class EnviaAtualizacao {
                         + "null, "
                         + "null, "
                         + "false, "
-                        + "" + inner.ObjectCatraca.getId() + ""
+                        + "" + catraca_id + ""
                         + ")"
                 );
             }
@@ -392,12 +441,12 @@ public class EnviaAtualizacao {
                         + "'" + json.getObservacao() + "', "
                         + "'" + json.getMensagem() + "', "
                         + "" + json.getLiberado() + ", "
-                        + "" + inner.ObjectCatraca.getId() + ")"
+                        + "" + catraca_id + ")"
                 );
             }
         }
 
-        enviarAtualizacaoTelaCatraca(inner);
+        enviarAtualizacaoTelaCatraca(cliente, servidor_numero, inner_numero);
     }
 
     public static void inativar_todas_catracas() {
@@ -420,10 +469,14 @@ public class EnviaAtualizacao {
     }
 
     public static void enviarAtualizacaoTelaCatraca(Inner inner) {
+        enviarAtualizacaoTelaCatraca(inner.ObjectCatraca.getCliente(), inner.ObjectCatraca.getServidor(), inner.ObjectCatraca.getNumero());
+    }
+
+    public static void enviarAtualizacaoTelaCatraca(String cliente, Integer servidor_numero, Integer inner_numero) {
         Conf_Cliente conf_cliente = new Conf_Cliente();
         conf_cliente.loadJson();
         try {
-            URL url = new URL("http://" + conf_cliente.getServidor_monitor() + "/monitorCatraca/envia_atualizacao.xhtml?cliente=" + inner.ObjectCatraca.getCliente() + "&catraca=" + inner.ObjectCatraca.getNumero() + "&servidor=" + inner.ObjectCatraca.getServidor());
+            URL url = new URL("http://" + conf_cliente.getServidor_monitor() + "/monitorCatraca/envia_atualizacao.xhtml?cliente=" + cliente + "&catraca=" + inner_numero + "&servidor=" + servidor_numero);
             Charset charset = Charset.forName("UTF8");
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();

@@ -1,6 +1,8 @@
 package com.topdata.easyInner.ui;
 
 import com.topdata.easyInner.controller.EasyInnerCatracaController;
+import com.topdata.easyInner.dao.Catraca;
+import com.topdata.easyInner.dao.Conf_Cliente;
 import com.topdata.easyInner.dao.DAO;
 import com.topdata.easyInner.utils.Block;
 import com.topdata.easyInner.utils.BlockInterface;
@@ -10,8 +12,8 @@ import com.topdata.easyInner.utils.Mac;
 import com.topdata.easyInner.utils.Path;
 import com.topdata.easyInner.utils.Ping;
 import com.topdata.easyInner.utils.Preloader;
+import com.topdata.easyInner.utils.RetornoJson;
 import java.awt.AWTException;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -24,8 +26,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -41,13 +46,16 @@ import javax.swing.Timer;
 public final class JFRMainCatraca extends JFrame implements ActionListener {
 
     private Timer timer = null;
-    private JLabel lblRelogio = new JLabel();
-    private JLabel lblStatus = new JLabel("Iniciando Projeto");
+    private JLabel lbl_relogio = new JLabel();
+    private JLabel lbl_status = new JLabel("Iniciando Projeto");
     private ActionEvent ae = null;
     private final Preloader preloader;
-    private JButton button_debug;
-    private JButton button_impl_codigo;
-    private JButton button_impl_cartao;
+    private JButton btn_debug;
+    private JButton btn_codigo;
+    private JButton btn_cartao;
+    private JButton btn_codigo_externo;
+    private static List<Catraca> list_catraca;
+    static EasyInnerCatracaController innerCatracaController;
 
     public static void main(String[] args) {
         Ping.execute();
@@ -65,7 +73,7 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 // this is where your handler code goes...
             }
         });
-        EasyInnerCatracaController innerCatracaController = new EasyInnerCatracaController(new JFRMainCatraca());
+        innerCatracaController = new EasyInnerCatracaController(new JFRMainCatraca());
         innerCatracaController.run();
     }
 
@@ -88,8 +96,8 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
 
         JPanel panel = new JPanel(new GridLayout(0, 1));
 
-        panel.add(lblRelogio);
-        panel.add(lblStatus);
+        panel.add(lbl_relogio);
+        panel.add(lbl_status);
 
         disparaRelogio();
 
@@ -113,7 +121,7 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
             }
         });
         preloader.reloadStatus("Aplicação em execução na bandeja do windows.");
-        lblStatus.setText("Projeto em Execução");
+        lbl_status.setText("Projeto em Execução");
         preloader.hide();
     }
 
@@ -157,32 +165,37 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 button_sair.addActionListener(Action_Sair());
                 button_sair.setBounds(220, 100, 200, 30);
 
-                button_debug = new JButton("Depurar");
-                button_debug.addActionListener(Action_Debug(frame));
-                button_debug.setBounds(10, 150, 80, 30);
+                setBtn_debug(new JButton("Depurar"));
+                getBtn_debug().addActionListener(Action_Debug(frame));
+                getBtn_debug().setBounds(10, 150, 80, 30);
 
-                button_impl_cartao = new JButton("Cartão");
-                button_impl_cartao.addActionListener(Action_Impl_Codigo(frame));
-                button_impl_cartao.setBounds(180, 150, 80, 30);
-                button_impl_cartao.setEnabled(false);
+                setBtn_cartao(new JButton("Cartão"));
+                getBtn_cartao().addActionListener(Action_Cartao(frame));
+                getBtn_cartao().setBounds(180, 150, 80, 30);
+                getBtn_cartao().setEnabled(false);
 
-                button_impl_codigo = new JButton("Código");
-                button_impl_codigo.addActionListener(Action_Impl_Cartao(frame));
-                button_impl_codigo.setBounds(340, 150, 80, 30);
+                setBtn_codigo(new JButton("Código"));
+                getBtn_codigo().addActionListener(Action_Codigo(frame));
+                getBtn_codigo().setBounds(260, 150, 80, 30);
 
-                lblRelogio.setBounds(10, 10, 500, 50);
-                lblRelogio.setFont(new Font(null, Font.PLAIN, 20));
+                setBtn_codigo_externo(new JButton("Externo"));
+                getBtn_codigo_externo().addActionListener(Action_Codigo_Externo(frame));
+                getBtn_codigo_externo().setBounds(340, 150, 80, 30);
 
-                lblStatus.setBounds(10, 50, 500, 50);
-                lblStatus.setFont(new Font(null, Font.PLAIN, 20));
+                getLbl_relogio().setBounds(10, 10, 500, 50);
+                getLbl_relogio().setFont(new Font(null, Font.PLAIN, 20));
+
+                getLbl_status().setBounds(10, 50, 500, 50);
+                getLbl_status().setFont(new Font(null, Font.PLAIN, 20));
                 frame.add(button_esconder);
                 frame.add(button_sair);
                 frame.add(new JSeparator(SwingConstants.HORIZONTAL));
-                frame.add(button_debug);
-                frame.add(button_impl_cartao);
-                frame.add(button_impl_codigo);
-                frame.add(lblRelogio);
-                frame.add(lblStatus);
+                frame.add(getBtn_debug());
+                frame.add(getBtn_cartao());
+                frame.add(getBtn_codigo());
+                frame.add(getBtn_codigo_externo());
+                frame.add(getLbl_relogio());
+                frame.add(getLbl_status());
 
                 addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
@@ -191,8 +204,9 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                     }
                 });
 
-                button_impl_cartao.setEnabled(Debugs.ON);
-                button_impl_codigo.setEnabled(Debugs.ON);
+                getBtn_cartao().setEnabled(Debugs.ON);
+                getBtn_codigo().setEnabled(Debugs.ON);
+                getBtn_codigo_externo().setEnabled(Debugs.ON);
 
                 frame.setVisible(true);
             }
@@ -200,49 +214,7 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
 
         return action_tray;
     }
-    //        ActionListener action_tray = (ActionEvent e) -> {
-    //            JFrame frame = new JFrame();
-    //            frame.setTitle("Catraca v5");
-    //
-    //            frame.setAutoRequestFocus(true);
-    //            frame.setLayout(null);
-    //            frame.setBounds(0, 0, 450, 180);
-    //            frame.setResizable(false);
-    //
-    //            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-    //            frame.setLocation(dim.width / 2 - frame.getSize().width / 2, dim.height / 2 - frame.getSize().height / 2);
-    //
-    //            JButton button_esconder = new JButton("Esconder");
-    //            button_esconder.addActionListener(Action_Esconder(frame));
-    //            button_esconder.setBounds(10, 100, 200, 30);
-    //
-    //            JButton button_sair = new JButton("Sair do Sistema");
-    //            button_sair.addActionListener(Action_Sair());
-    //            button_sair.setBounds(220, 100, 200, 30);
-    //
-    //            lblRelogio.setBounds(10, 10, 500, 50);
-    //            lblRelogio.setFont(new Font(null, Font.PLAIN, 20));
-    //
-    //            lblStatus.setBounds(10, 50, 500, 50);
-    //            lblStatus.setFont(new Font(null, Font.PLAIN, 20));
-    //
-    //            frame.add(button_esconder);
-    //            frame.add(button_sair);
-    //            frame.add(lblRelogio);
-    //            frame.add(lblStatus);
-    //
-    //            addWindowListener(new java.awt.event.WindowAdapter() {
-    //                @Override
-    //                public void windowClosing(WindowEvent windowEvent) {
-    //                    EnviaAtualizacao.inativar_todas_catracas();
-    //                }
-    //            });
-    //
-    //            frame.setVisible(true);
-    //
-    //        };
 
-    // }
     public ActionListener Action_Sair() {
         ActionListener action_sair = new ActionListener() {
             @Override
@@ -250,7 +222,6 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 DAO dao = new DAO();
                 String mac = Mac.getInstance();
                 if (dao.isActive()) {
-                    // dao.query_execute("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
                     dao.query("SELECT func_catraca_monitora(false, null, '" + mac + "')");
                 }
                 try {
@@ -261,14 +232,6 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 System.exit(0);
             }
         };
-//        ActionListener action_sair = (ActionEvent e) -> {
-//            DAO dao = new DAO();
-//            String mac = Mac.getInstance();
-//            if (dao.getConectado()) {
-//                dao.query("DELETE FROM soc_catraca_monitora WHERE id_catraca IN(SELECT id FROM soc_catraca WHERE ds_mac = '" + mac + "')");
-//            }
-//            System.exit(0);
-//        };
         return action_sair;
     }
 
@@ -279,9 +242,6 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
             }
         };
-//        ActionListener action_esconder = (ActionEvent e) -> {
-//            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
-//        };
         return action_esconder;
     }
 
@@ -289,33 +249,122 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
         ActionListener action_esconder = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                list_catraca = new ArrayList();
                 Debugs.ON = !Debugs.ON;
+                if (Debugs.ON) {
+                    list_catraca = innerCatracaController.getLista_catraca();
+                }
                 frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
             }
         };
+        return action_esconder;
+    }
+
+    public ActionListener Action_Cartao(final JFrame frame) {
+        ActionListener action_esconder = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!Debugs.ON) {
+                    JOptionPane.showMessageDialog(null, "Habiltiar o modo de depuração - Cartão");
+                    return;
+                }
+                String depto = "12";
+                String catraca = "1";
+                String servidor = "1";
+                String catraca_id = "1";
+                String deptos = "";
+                Boolean leitorExterno = false;
+                String ip = "";
+                try {
+                    depto = JOptionPane.showInputDialog(null, "Depto", depto);
+                } catch (Exception e2) {
+
+                }
+                try {
+                    catraca = JOptionPane.showInputDialog(null, "Catraca Inner", catraca);
+                    for (int i = 0; i < list_catraca.size(); i++) {
+                        if (list_catraca.get(i).getNumero() == Integer.parseInt(catraca) && list_catraca.get(i).getDepartamento() == Integer.parseInt(depto)) {
+                            catraca_id = list_catraca.get(i).getId() + "";
+                            servidor = list_catraca.get(i).getServidor() + "";
+                            if (list_catraca.get(i).getLeitor_biometrico_externo()) {
+                                leitorExterno = true;
+                                ip = list_catraca.get(i).getIP();
+                            }
+                            break;
+                        }
+                    }
+                } catch (Exception e2) {
+
+                }
+                String response = JOptionPane.showInputDialog(null, "Código de Barras do Cartão");
+                Conf_Cliente cc = new Conf_Cliente();
+                cc.loadJson();
+                try {
+                    RetornoJson json = EnviaAtualizacao.webservice(response, Integer.parseInt(depto), Integer.parseInt(catraca));
+                    if (json != null) {
+                        if (json.getLiberado()) {
+                            if (json.getLiberado()) {
+                                EnviaAtualizacao.atualiza_tela(cc.getPostgres_cliente(), Integer.parseInt(servidor), Integer.parseInt(catraca), Integer.parseInt(catraca_id), json, true);
+                            }
+                        }
+                    }
+                } catch (Exception e3) {
+
+                }
+            }
+        };
 //        ActionListener action_esconder = (ActionEvent e) -> {
 //            frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 //        };
         return action_esconder;
     }
 
-    public ActionListener Action_Impl_Cartao(final JFrame frame) {
+    public ActionListener Action_Codigo(final JFrame frame) {
         ActionListener action_esconder = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!Debugs.ON) {
-                    JOptionPane.showMessageDialog(null, "Habiltiar o modo de depuração");
+                    JOptionPane.showMessageDialog(null, "Habiltiar o modo de depuração - Código");
                     return;
                 }
                 String depto = "12";
+                String catraca = "1";
+                String servidor = "1";
+                String catraca_id = "1";
+                String deptos = "";
+                Boolean leitorExterno = false;
+                String ip = "";
                 try {
-                    depto = JOptionPane.showInputDialog(null, "Depto");
+                    depto = JOptionPane.showInputDialog(null, "Depto", depto);
+                } catch (Exception e2) {
+
+                }
+                try {
+                    catraca = JOptionPane.showInputDialog(null, "Catraca Inner", catraca);
+                    for (int i = 0; i < list_catraca.size(); i++) {
+                        if (list_catraca.get(i).getNumero() == Integer.parseInt(catraca) && list_catraca.get(i).getDepartamento() == Integer.parseInt(depto)) {
+                            catraca_id = list_catraca.get(i).getId() + "";
+                            servidor = list_catraca.get(i).getServidor() + "";
+                            if (list_catraca.get(i).getLeitor_biometrico_externo()) {
+                                leitorExterno = true;
+                                ip = list_catraca.get(i).getIP();
+                            }
+                            break;
+                        }
+                    }
                 } catch (Exception e2) {
 
                 }
                 String response = JOptionPane.showInputDialog(null, "Código");
+                Conf_Cliente cc = new Conf_Cliente();
+                cc.loadJson();
                 try {
-                    EnviaAtualizacao.webservice(null, response, Integer.parseInt(depto), null);
+                    RetornoJson json = EnviaAtualizacao.webservice(Integer.parseInt(response), Integer.parseInt(depto), Integer.parseInt(catraca));
+                    if (json != null) {
+                        if (json.getLiberado()) {
+                            EnviaAtualizacao.atualiza_tela(cc.getPostgres_cliente(), Integer.parseInt(servidor), Integer.parseInt(catraca), Integer.parseInt(catraca_id), json, true);
+                        }
+                    }
                 } catch (Exception e2) {
 
                 }
@@ -327,24 +376,54 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
         return action_esconder;
     }
 
-    public ActionListener Action_Impl_Codigo(final JFrame frame) {
+    public ActionListener Action_Codigo_Externo(final JFrame frame) {
         ActionListener action_esconder = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!Debugs.ON) {
-                    JOptionPane.showMessageDialog(null, "Habiltiar o modo de depuração");
+                    JOptionPane.showMessageDialog(null, "Habiltiar o modo de depuração - Código");
                     return;
                 }
                 String depto = "12";
+                String catraca = "1";
+                String servidor = "1";
+                String catraca_id = "1";
+                String deptos = "";
+                Boolean leitorExterno = false;
+                String ip = "";
                 try {
-                    depto = JOptionPane.showInputDialog(null, "Depto");
+                    depto = JOptionPane.showInputDialog(null, "Depto", depto);
                 } catch (Exception e2) {
 
                 }
-                String response = JOptionPane.showInputDialog(null, "Código");
                 try {
-                    EnviaAtualizacao.webservice(Integer.parseInt(response), Integer.parseInt(depto), null);
+                    catraca = JOptionPane.showInputDialog(null, "Catraca Inner", catraca);
+                    for (int i = 0; i < list_catraca.size(); i++) {
+                        if (list_catraca.get(i).getNumero() == Integer.parseInt(catraca) && list_catraca.get(i).getDepartamento() == Integer.parseInt(depto)) {
+                            catraca_id = list_catraca.get(i).getId() + "";
+                            servidor = list_catraca.get(i).getServidor() + "";
+                            if (list_catraca.get(i).getLeitor_biometrico_externo()) {
+                                leitorExterno = true;
+                                ip = list_catraca.get(i).getIP();
+                            }
+                            break;
+                        }
+                    }
                 } catch (Exception e2) {
+
+                }
+                String response = JOptionPane.showInputDialog(null, "Código da Pessoa");
+                Conf_Cliente cc = new Conf_Cliente();
+                cc.loadJson();
+                if (!leitorExterno) {
+                    Debugs.breakPoint("NÃO HÁ BIOMETRIA EXTERNA CONFIGURADA VÍNCULADA A ESTA CATRACA!");
+                    return;
+                }
+                try {
+                    Debugs.breakPoint("TESTE DA BIOMETRIA DE LEITURA EXTERNA (BIOMETRIA -> biometria_catraca)");
+                    ResultSet rs_insert = new DAO().query("SELECT func_biometria_catraca_insert('" + ip + "', " + Integer.parseInt(response) + ") AS retorno");
+                    rs_insert.next();
+                } catch (NumberFormatException | SQLException e2) {
 
                 }
             }
@@ -382,22 +461,55 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 + ":"
                 + ((s < 10) ? "0" : "")
                 + s;
-        getLblRelogio().setText(hora);
+        getLbl_relogio().setText(hora);
     }
 
-    public JLabel getLblRelogio() {
-        return lblRelogio;
+    public JLabel getLbl_relogio() {
+        return lbl_relogio;
     }
 
-    public void setLblRelogio(JLabel lblRelogio) {
-        this.lblRelogio = lblRelogio;
+    public void setLbl_relogio(JLabel lbl_relogio) {
+        this.lbl_relogio = lbl_relogio;
     }
 
-    public JLabel getLblStatus() {
-        return lblStatus;
+    public JLabel getLbl_status() {
+        return lbl_status;
     }
 
-    public void setLblStatus(JLabel lblStatus) {
-        this.lblStatus = lblStatus;
+    public void setLbl_status(JLabel lbl_status) {
+        this.lbl_status = lbl_status;
     }
+
+    public JButton getBtn_debug() {
+        return btn_debug;
+    }
+
+    public void setBtn_debug(JButton btn_debug) {
+        this.btn_debug = btn_debug;
+    }
+
+    public JButton getBtn_codigo() {
+        return btn_codigo;
+    }
+
+    public void setBtn_codigo(JButton btn_codigo) {
+        this.btn_codigo = btn_codigo;
+    }
+
+    public JButton getBtn_cartao() {
+        return btn_cartao;
+    }
+
+    public void setBtn_cartao(JButton btn_cartao) {
+        this.btn_cartao = btn_cartao;
+    }
+
+    public JButton getBtn_codigo_externo() {
+        return btn_codigo_externo;
+    }
+
+    public void setBtn_codigo_externo(JButton btn_codigo_externo) {
+        this.btn_codigo_externo = btn_codigo_externo;
+    }
+
 }
