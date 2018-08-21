@@ -1,6 +1,7 @@
 package com.topdata.easyInner.controller;
 
 import com.topdata.EasyInner;
+import com.topdata.easyInner.dao.Conf_Cliente;
 import com.topdata.easyInner.dao.DAO;
 import com.topdata.easyInner.entity.Inner;
 import com.topdata.easyInner.enumeradores.Enumeradores;
@@ -9,6 +10,14 @@ import com.topdata.easyInner.utils.EasyInnerUtils;
 import com.topdata.easyInner.utils.EnviaAtualizacao;
 import com.topdata.easyInner.utils.RetornoJson;
 import com.topdata.easyInner.utils.SoundUtils;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -18,9 +27,16 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sound.sampled.LineUnavailableException;
-import javax.swing.JOptionPane;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class EasyInnerCatracaControllerThread extends DAO {
 
@@ -1700,29 +1716,97 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 if (!isActive()) {
                     return null;
                 }
-                ResultSet rs = query(
-                        "SELECT pessoa FROM vw_biometria_catraca WHERE ip = '" + inner.ObjectCatraca.getIP() + "'"
-                );
 
-                rs.next();
+                Conf_Cliente cc = new Conf_Cliente();
+                cc.loadJson();
 
-                RetornoJson json_webservice = null;
+                // TESTE APENAS - Bruno Vieira Schettini da Silva
+                if (cc.getSocket_catraca()) {
+                    String result;
+                    FutureTask<String> theTask = null;
+                    Thread thread = null;
+                    try {
+                        theTask = new FutureTask(new Callable() {
+                            @Override
+                            public Object call() throws Exception {
+                                String result = resultSocket(inner.ObjectCatraca.getSocket_porta());
+                                return result;
+                            }
 
-                if (rs.getRow() > 0) {
-                    if (rs.getObject("pessoa") != null) {
-                        json_webservice = EnviaAtualizacao.webservice(rs.getInt("pessoa"), inner.ObjectCatraca.getDepartamento(), inner.Numero);
+                        });
+                        thread = new Thread(theTask);
+                        thread.start();
+                        result = theTask.get(500, TimeUnit.MILLISECONDS);
+                        theTask.cancel(true);
+                        try {
+                            thread.interrupt();
+                        } catch (Exception e) {
+
+                        }
+                    } catch (TimeoutException | InterruptedException | ExecutionException ee) {
+                        if (theTask != null) {
+                            theTask.cancel(true);
+                        }
+                        if (thread != null) {
+                            thread.interrupt();
+                        }
+                        result = "";
                     }
 
-                    if (!isActive()) {
-                        return null;
+                    JSONObject jSONObject;
+                    RetornoJson json_webservice = null;
+                    if (result != null && !result.isEmpty()) {
+                        try {
+                            jSONObject = new JSONObject(result);
+                            String ip = "";
+                            String codigo = null;
+                            try {
+                                ip = jSONObject.getString("ds_ip");
+                            } catch (Exception e) {
+
+                            }
+                            try {
+                                codigo = jSONObject.getString("id_pessoa");
+                            } catch (Exception e) {
+
+                            }
+                            if (codigo != null && !codigo.isEmpty() && !codigo.equals("null")) {
+                                json_webservice = EnviaAtualizacao.webservice(codigo, inner.ObjectCatraca.getDepartamento(), inner.ObjectCatraca.getSocket_porta());
+                                if (!isActive()) {
+                                    return null;
+                                }
+                                return json_webservice;
+                            }
+                        } catch (JSONException ex) {
+                            Logger.getLogger(EasyInnerCatracaControllerThread.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
-                    //query_execute("DELETE FROM pes_biometria_catraca WHERE ds_ip = '" + inner.ObjectCatraca.getIP() + "'");
-                    query("SELECT func_biometria_catraca_delete('" + inner.ObjectCatraca.getIP() + "')");
+                } else {
+                    ResultSet rs = query(
+                            "SELECT pessoa FROM vw_biometria_catraca WHERE ip = '" + inner.ObjectCatraca.getIP() + "'"
+                    );
 
-                    rs.close();
+                    rs.next();
 
-                    return json_webservice;
+                    RetornoJson json_webservice = null;
+
+                    if (rs.getRow() > 0) {
+                        if (rs.getObject("pessoa") != null) {
+                            json_webservice = EnviaAtualizacao.webservice(rs.getInt("pessoa"), inner.ObjectCatraca.getDepartamento(), inner.Numero);
+                        }
+
+                        if (!isActive()) {
+                            return null;
+                        }
+                        //query_execute("DELETE FROM pes_biometria_catraca WHERE ds_ip = '" + inner.ObjectCatraca.getIP() + "'");
+                        query("SELECT func_biometria_catraca_delete('" + inner.ObjectCatraca.getIP() + "')");
+
+                        rs.close();
+
+                        return json_webservice;
+                    }
                 }
+
 //                String my_ip = "";
 //                
 //                if (!dao.getConectado()){
@@ -2717,6 +2801,68 @@ public class EasyInnerCatracaControllerThread extends DAO {
 
     public void setParar(Boolean Parar) {
         this.Parar = Parar;
+    }
+
+    public String resultSocket(Integer client_port) {
+        Socket socket = null;
+        try {
+            int port = client_port;
+            ServerSocket serverSocket = new ServerSocket(port);
+            socket.setSoTimeout(300);
+            System.out.println("Server Started and listening to the port " + client_port);
+
+            //Server is running always. This is done using this while(true) loop
+            while (true) {
+                //Reading the message from the client
+                socket = serverSocket.accept();
+                InputStream is = socket.getInputStream();
+                InputStreamReader isr = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(isr);
+                String fromClient = br.readLine();
+                System.out.println("Message received from client is " + fromClient);
+                JSONObject jSONObject = new JSONObject(fromClient);
+                String ip = "";
+                String codigo = null;
+                try {
+                    ip = jSONObject.getString("ds_ip");
+                } catch (Exception e) {
+
+                }
+                try {
+                    codigo = jSONObject.getString("id_pessoa");
+                } catch (Exception e) {
+
+                }
+                if (fromClient != null && !fromClient.isEmpty()) {
+                    //Multiplying the number by 2 and forming the return message
+                    String returnMessage;
+                    try {
+                        returnMessage = "200";
+                    } catch (NumberFormatException e) {
+                        //Input was not a number. Sending proper message back to client.
+                        returnMessage = "200";
+                    }
+
+                    //Sending the response back to the client.
+                    OutputStream os = socket.getOutputStream();
+                    OutputStreamWriter osw = new OutputStreamWriter(os);
+                    BufferedWriter bw = new BufferedWriter(osw);
+                    bw.write(returnMessage);
+                    System.out.println("Message sent to the client is " + returnMessage);
+                    bw.flush();
+                    return fromClient;
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                socket.close();
+            } catch (Exception e) {
+            }
+        }
+        return null;
     }
 
 }

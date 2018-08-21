@@ -37,7 +37,7 @@ public class CatracaDao extends DAO {
                     + "WHERE c.is_ativo = TRUE \n "
                     + "  AND c.ds_mac = '" + macString + "' \n "
                     + "ORDER BY c.nr_numero"
-            );            
+            );
 
             while (rs.next()) {
                 list.add(
@@ -61,7 +61,8 @@ public class CatracaDao extends DAO {
                                 rs.getString("ds_ip"),
                                 rs.getString("ds_mac"),
                                 rs.getInt("nr_servidor"),
-                                true
+                                true,
+                                rs.getInt("nr_socket_porta")
                         )
                 );
             }
@@ -115,7 +116,8 @@ public class CatracaDao extends DAO {
                     rs.getString("ds_ip"),
                     rs.getString("ds_mac"),
                     rs.getInt("nr_servidor"),
-                    true
+                    true,
+                    rs.getInt("nr_socket_porta")
             );
         } catch (SQLException e) {
             e.getMessage();

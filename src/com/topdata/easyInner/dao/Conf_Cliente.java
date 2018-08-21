@@ -12,47 +12,6 @@ import org.json.JSONObject;
 
 public class Conf_Cliente {
 
-    public void loadJson() {
-        String path = Path.getRealPath();
-        try {
-            File file = new File(path + File.separator + "conf" + File.separator + "configuracao.json");
-            if (!file.exists()) {
-                return;
-            }
-            String json = null;
-            try {
-                json = new String(Files.readAllBytes(Paths.get(file.getPath())));
-            } catch (IOException ex) {
-                Logger.getLogger(Conf_Cliente.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            JSONObject jSONObject = new JSONObject(json);
-
-            this.postgres_ip = jSONObject.getString("postgres_ip");
-            this.postgres_usuario = jSONObject.getString("postgres_usuario");
-            this.postgres_senha = jSONObject.getString("postgres_senha");
-            this.postgres_banco = jSONObject.getString("postgres_banco");
-            this.postgres_cliente = jSONObject.getString("postgres_cliente");
-            this.servidor_monitor = jSONObject.getString("servidor_monitor");
-
-            try {
-                this.postgres_porta = jSONObject.getString("postgres_porta");
-            } catch (JSONException e) {
-                this.postgres_porta = "5432";
-            }
-
-//            if (this.postgres_senha.isEmpty()) {
-//                if (postgres_banco.equals("Sindical")) {
-//                    this.postgres_senha = "989899";
-//                } else {
-//                    this.postgres_senha = "r#@tools";
-//                }
-//            }
-        } catch (JSONException ex) {
-            System.out.println(ex.getMessage());
-        }
-    }
-
     private String postgres_ip;
     private String postgres_usuario;
     private String postgres_senha;
@@ -60,6 +19,7 @@ public class Conf_Cliente {
     private String postgres_cliente;
     private String postgres_porta;
     private String servidor_monitor;
+    private Boolean socket_catraca;
 
     public Conf_Cliente() {
         this.postgres_ip = "";
@@ -69,9 +29,10 @@ public class Conf_Cliente {
         this.postgres_cliente = "";
         this.postgres_porta = "5432";
         this.servidor_monitor = "";
+        this.socket_catraca = false;
     }
 
-    public Conf_Cliente(String postgres_ip, String postgres_usuario, String postgres_senha, String postgres_banco, String postgres_cliente, String postgres_porta, String servidor_monitor) {
+    public Conf_Cliente(String postgres_ip, String postgres_usuario, String postgres_senha, String postgres_banco, String postgres_cliente, String postgres_porta, String servidor_monitor, Boolean socket_catraca) {
         this.postgres_ip = postgres_ip;
         this.postgres_usuario = postgres_usuario;
         this.postgres_senha = postgres_senha;
@@ -79,6 +40,7 @@ public class Conf_Cliente {
         this.postgres_cliente = postgres_cliente;
         this.postgres_porta = postgres_porta;
         this.servidor_monitor = servidor_monitor;
+        this.socket_catraca = socket_catraca;
     }
 
     public String getPostgres_ip() {
@@ -129,18 +91,66 @@ public class Conf_Cliente {
         this.servidor_monitor = servidor_monitor;
     }
 
-    /**
-     * @return the postgres_porta
-     */
     public String getPostgres_porta() {
         return postgres_porta;
     }
 
-    /**
-     * @param postgres_porta the postgres_porta to set
-     */
     public void setPostgres_porta(String postgres_porta) {
         this.postgres_porta = postgres_porta;
+    }
+
+    public void loadJson() {
+        String path = Path.getRealPath();
+        try {
+            File file = new File(path + File.separator + "conf" + File.separator + "configuracao.json");
+            if (!file.exists()) {
+                return;
+            }
+            String json = null;
+            try {
+                json = new String(Files.readAllBytes(Paths.get(file.getPath())));
+            } catch (IOException ex) {
+                Logger.getLogger(Conf_Cliente.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            JSONObject jSONObject = new JSONObject(json);
+
+            this.postgres_ip = jSONObject.getString("postgres_ip");
+            this.postgres_usuario = jSONObject.getString("postgres_usuario");
+            this.postgres_senha = jSONObject.getString("postgres_senha");
+            this.postgres_banco = jSONObject.getString("postgres_banco");
+            this.postgres_cliente = jSONObject.getString("postgres_cliente");
+            this.servidor_monitor = jSONObject.getString("servidor_monitor");
+
+            try {
+                this.postgres_porta = jSONObject.getString("postgres_porta");
+            } catch (JSONException e) {
+                this.postgres_porta = "5432";
+            }
+            try {
+                this.socket_catraca = jSONObject.getBoolean("socket_catraca");
+            } catch (JSONException e) {
+                this.socket_catraca = false;
+            }
+
+//            if (this.postgres_senha.isEmpty()) {
+//                if (postgres_banco.equals("Sindical")) {
+//                    this.postgres_senha = "989899";
+//                } else {
+//                    this.postgres_senha = "r#@tools";
+//                }
+//            }
+        } catch (JSONException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    public Boolean getSocket_catraca() {
+        return socket_catraca;
+    }
+
+    public void setSocket_catraca(Boolean socket_catraca) {
+        this.socket_catraca = socket_catraca;
     }
 
 }
