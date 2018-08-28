@@ -4,6 +4,7 @@ import com.topdata.easyInner.controller.EasyInnerCatracaController;
 import com.topdata.easyInner.dao.Catraca;
 import com.topdata.easyInner.dao.Conf_Cliente;
 import com.topdata.easyInner.dao.DAO;
+import com.topdata.easyInner.utils.Biometria;
 import com.topdata.easyInner.utils.Block;
 import com.topdata.easyInner.utils.BlockInterface;
 import com.topdata.easyInner.utils.Debugs;
@@ -25,7 +26,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -42,6 +51,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import org.json.JSONObject;
 
 public final class JFRMainCatraca extends JFrame implements ActionListener {
 
@@ -56,6 +66,9 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
     private JButton btn_codigo_externo;
     private static List<Catraca> list_catraca;
     static EasyInnerCatracaController innerCatracaController;
+    static Thread biometria;
+    private Conf_Cliente conf_Cliente = new Conf_Cliente();
+    private Socket socket;
 
     public static void main(String[] args) {
         Ping.execute();
@@ -78,7 +91,7 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
     }
 
     public JFRMainCatraca() {
-
+        conf_Cliente.loadJson();
         preloader = new Preloader();
         preloader.setAppTitle("Dispostivo - " + "Catraca");
         preloader.setAppStatus("Iniciando...");
@@ -123,6 +136,14 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
         preloader.reloadStatus("Aplicação em execução na bandeja do windows.");
         lbl_status.setText("Projeto em Execução");
         preloader.hide();
+        if (conf_Cliente.getSocket_catraca()) {
+            if (conf_Cliente.getSocket_catraca_porta() == null) {
+                System.err.println("Informar a porta do socket!");
+            } else {
+                biometria = new Thread(waitCodigoBiometria);
+                biometria.start();
+            }
+        }
     }
 
     public void criar_SystemTray() {
@@ -463,6 +484,71 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                 + s;
         getLbl_relogio().setText(hora);
     }
+
+    private final Runnable waitCodigoBiometria = new Runnable() {
+        @Override
+        public void run() {
+
+            try {
+                ServerSocket serverSocket = new ServerSocket(conf_Cliente.getSocket_catraca_porta());
+                System.out.println("Server Started and listening to the port " + conf_Cliente.getSocket_catraca_porta());
+
+                //Server is running always. This is done using this while(true) loop
+                while (true) {
+                    //Reading the message from the client
+                    socket = serverSocket.accept();
+                    InputStream is = socket.getInputStream();
+                    InputStreamReader isr = new InputStreamReader(is);
+                    BufferedReader br = new BufferedReader(isr);
+                    String fromClient = br.readLine();
+                    System.out.println("Message received from client is " + fromClient);
+                    JSONObject jSONObject = new JSONObject(fromClient);
+                    String ip = "";
+                    String codigo = null;
+                    try {
+                        ip = jSONObject.getString("ds_ip");
+                    } catch (Exception e) {
+
+                    }
+                    try {
+                        codigo = jSONObject.getString("id_pessoa");
+                    } catch (Exception e) {
+
+                    }
+                    if (codigo == null || codigo.equals("null") || codigo.isEmpty()) {
+                        Biometria.RECEBIDA.put(ip, null);
+                    } else {
+                        Biometria.RECEBIDA.put(ip, Integer.parseInt(codigo));
+                    }
+
+                    //Multiplying the number by 2 and forming the return message
+                    String returnMessage;
+                    try {
+                        returnMessage = "200";
+                    } catch (NumberFormatException e) {
+                        //Input was not a number. Sending proper message back to client.
+                        returnMessage = "200";
+                    }
+
+                    //Sending the response back to the client.
+                    OutputStream os = socket.getOutputStream();
+                    OutputStreamWriter osw = new OutputStreamWriter(os);
+                    BufferedWriter bw = new BufferedWriter(osw);
+                    bw.write(returnMessage);
+                    System.out.println("Message sent to the client is " + returnMessage);
+                    bw.flush();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    socket.close();
+                } catch (Exception e) {
+                }
+            }
+        }
+
+    };
 
     public JLabel getLbl_relogio() {
         return lbl_relogio;

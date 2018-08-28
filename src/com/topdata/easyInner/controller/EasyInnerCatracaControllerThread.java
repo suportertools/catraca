@@ -1,11 +1,14 @@
 package com.topdata.easyInner.controller;
 
+import com.sun.org.apache.xml.internal.resolver.helpers.Debug;
 import com.topdata.EasyInner;
 import com.topdata.easyInner.dao.Conf_Cliente;
 import com.topdata.easyInner.dao.DAO;
 import com.topdata.easyInner.entity.Inner;
 import com.topdata.easyInner.enumeradores.Enumeradores;
+import com.topdata.easyInner.utils.Biometria;
 import com.topdata.easyInner.utils.DataHoje;
+import com.topdata.easyInner.utils.Debugs;
 import com.topdata.easyInner.utils.EasyInnerUtils;
 import com.topdata.easyInner.utils.EnviaAtualizacao;
 import com.topdata.easyInner.utils.RetornoJson;
@@ -39,18 +42,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class EasyInnerCatracaControllerThread extends DAO {
-
+    
     private Inner inner;
     private EasyInner easy_inner_thread;
     private RetornoJson json;
-
+    
     private final Integer TEMPORIZADOR = 3000;
-
+    
     private boolean LiberaEntrada = false;
     private boolean LiberaSaida = false;
     private boolean LiberaEntradaInvertida = false;
     private boolean LiberaSaidaInvertida = false;
-
+    
     private Boolean Parar = false;
     private Integer attempts = 0;
 
@@ -95,96 +98,96 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     case ESTADO_CONECTAR:
                         PASSO_ESTADO_CONECTAR();
                         break;
-
+                    
                     case ESTADO_ENVIAR_CFG_OFFLINE:
                         PASSO_ESTADO_ENVIAR_CFG_OFFLINE();
                         break;
-
+                    
                     case ESTADO_COLETAR_BILHETES:
                         PASSO_ESTADO_COLETAR_BILHETES();
                         break;
-
+                    
                     case ESTADO_ENVIAR_CFG_ONLINE:
                         PASSO_ESTADO_ENVIAR_CFG_ONLINE();
                         break;
-
+                    
                     case ESTADO_ENVIAR_DATA_HORA:
                         PASSO_ESTADO_ENVIAR_DATA_HORA();
                         break;
-
+                    
                     case ESTADO_ENVIAR_MSG_PADRAO:
                         PASSO_ENVIAR_MENSAGEM_PADRAO();
                         break;
-
+                    
                     case ESTADO_CONFIGURAR_ENTRADAS_ONLINE:
                         PASSO_ESTADO_CONFIGURAR_ENTRADAS_ONLINE();
                         break;
-
+                    
                     case ESTADO_POLLING:
                         PASSO_ESTADO_POLLING();
                         break;
-
+                    
                     case ESTADO_LIBERAR_CATRACA:
                         PASSO_LIBERA_GIRO_CATRACA();
                         break;
-
+                    
                     case ESTADO_MONITORA_GIRO_CATRACA:
                         PASSO_MONITORA_GIRO_CATRACA();
                         break;
-
+                    
                     case PING_ONLINE:
                         PASSO_ESTADO_ENVIA_PING_ONLINE();
                         break;
-
+                    
                     case ESTADO_RECONECTAR:
                         PASSO_ESTADO_RECONECTAR();
                         break;
-
+                    
                     case AGUARDA_TEMPO_MENSAGEM:
                         PASSO_AGUARDA_TEMPO_MENSAGEM();
                         break;
-
+                    
                     case ESTADO_DEFINICAO_TECLADO:
                         PASSO_ESTADO_DEFINICAO_TECLADO();
                         break;
-
+                    
                     case ESTADO_AGUARDA_DEFINICAO_TECLADO:
                         PASSO_ESTADO_AGUARDA_DEFINICAO_TECLADO();
                         break;
-
+                    
                     case ESTADO_ENVIA_MSG_URNA:
                         PASSO_ESTADO_ENVIA_MSG_URNA();
                         break;
-
+                    
                     case ESTADO_MONITORA_URNA:
                         PASSO_ESTADO_MONITORA_URNA();
                         break;
-
+                    
                     case ACIONAR_RELE:
                         ACIONAR_RELE();
                         break;
-
+                    
                     case ESTADO_ENVIAR_CONFIGMUD_ONLINE_OFFLINE:
                         PASSO_ESTADO_ENVIAR_CONFIGMUD_ONLINE_OFFLINE();
                         break;
-
+                    
                     case ESTADO_ENVIAR_MENSAGEM:
                         PASSO_ESTADO_ENVIAR_MSG_OFFLINE();
                         break;
-
+                    
                     case ESTADO_ENVIAR_HORARIOS:
                         PASSO_ESTADO_ENVIAR_HORARIOS();
                         break;
-
+                    
                     case ESTADO_ENVIAR_MENSAGEM_ACESSO_NEGADO:
                         PASSO_ENVIAR_MENSAGEM_ACESSO_NEGADO();
                         break;
-
+                    
                     case ESTADO_ENVIAR_USUARIOS_LISTAS:
                         PASSO_ESTADO_ENVIAR_USUARIOS_LISTAS();
                         break;
                 }
-
+                
                 if (inner.CntDoEvents++ > 10) {
                     inner.CntDoEvents = 0;
                 }
@@ -217,11 +220,11 @@ public class EasyInnerCatracaControllerThread extends DAO {
     private void PASSO_ESTADO_CONECTAR() {
         try {
             long tempo;
-
+            
             int Ret = Enumeradores.Limpar;
             //Inicia tempo ping online
             inner.TempoInicialPingOnLine = (int) System.currentTimeMillis();
-
+            
             long IniConexao = System.currentTimeMillis();
             //Realiza loop enquanto o tempo fim for menor que o tempo atual, e o comando retornado diferente de OK.
             if (!EnviaAtualizacao.isCaiu_conexao()) {
@@ -234,7 +237,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 Thread.sleep(101);
                 Ret = testarConexaoInner();
             } while (Ret != Enumeradores.RET_COMANDO_OK && tempo < TEMPORIZADOR);
-
+            
             if (Ret == Enumeradores.RET_COMANDO_OK) {
                 //caso consiga o Inner vai para o Passo de Configuração OFFLINE, posteriormente para coleta de Bilhetes.
                 inner.CountTentativasEnvioComando = 0;
@@ -252,7 +255,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 //enviarAtualizacaoTelaCatraca(inner.Numero);
                 return;
             }
-
+            
             Calendar calendar = new GregorianCalendar();
             Date date = new Date();
             calendar.setTime(date);
@@ -393,7 +396,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
 
             //Envia as configurações ao Inner Atual.
             int Ret = easy_inner_thread.EnviarConfiguracoes(inner.Numero);
-
+            
             if (Ret == Enumeradores.RET_COMANDO_OK) {
                 //caso consiga enviar as configurações, passa para o passo Enviar Data Hora
                 inner.CountTentativasEnvioComando = 0;
@@ -510,12 +513,12 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 inner.TempoInicialPingOnLine = (int) System.currentTimeMillis();
                 inner.CountTentativasEnvioComando = 0;
                 inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_POLLING;
-
+                
                 if (!EnviaAtualizacao.isCaiu_conexao()) {
                     EnviaAtualizacao.status(inner.ObjectCatraca.getId(), true, "Ativa");
                     EnviaAtualizacao.enviarAtualizacaoTelaCatraca(inner);
                 }
-
+                
                 if (inner.Catraca) {
 //                    jBtnEntrada.setText("Entrada");
 //                    jBtnSaida.setText("Saída");
@@ -552,18 +555,18 @@ public class EasyInnerCatracaControllerThread extends DAO {
         try {
             // ATUALIZA AUTOMATICAMENTE AS BIOMETRIAS SE TIVER ALGUMA NOVA
             if (inner.Biometrico) {
-
+                
                 if (!isActive()) {
                     return;
                 }
-
+                
                 ResultSet rs = query("SELECT * FROM vw_catraca_biometria  WHERE ativo = true AND enviado = false AND biometria1 <> '' AND biometria2 <> ''");
                 if (rs.next()) {
                     //form.get(0).getLblStatus().setText("Atualizando Biometrias");
                     loadBiometria();
                 }
             }
-
+            
             json = RetornaPessoaLiberada();
             if (json != null) {
                 if (!json.getLiberado()) {
@@ -573,7 +576,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 }
                 return;
             }
-
+            
             StringBuffer Cartao = new StringBuffer();
 
             //Thread.sleep(10l);
@@ -584,7 +587,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
 
             //Atribui Temporizador
             inner.Temporizador = (int) System.currentTimeMillis();
-
+            
             if (Ret == Enumeradores.RET_COMANDO_OK) {
                 if (DadosOnLine[0] == Enumeradores.FIM_TEMPO_ACIONAMENTO
                         || DadosOnLine[0] == Enumeradores.GIRO_DA_CATRACA_TOPDATA
@@ -595,7 +598,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_ENVIAR_MSG_PADRAO;
                     return;
                 }
-
+                
                 String NumCartao = Cartao.toString();
                 switch (DadosOnLine[0]) {
                     case 1:
@@ -623,7 +626,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     default:
                         break;
                 }
-
+                
                 if (json != null) {
                     if (!json.getLiberado()) {
                         // JOptionPane.showMessageDialog(null, "Enumeradores.EstadosInner.ESTADO_ENVIAR_MENSAGEM_ACESSO_NEGADO " + json.getNr_pessoa());
@@ -797,9 +800,9 @@ public class EasyInnerCatracaControllerThread extends DAO {
                             query("SELECT func_catraca_frequencia(" + json.getNr_pessoa() + ", null, " + inner.ObjectCatraca.getDepartamento() + ", '" + es + "')");
                         }
                     }
-
+                    
                     EnviaAtualizacao.atualiza_tela(inner);
-
+                    
                     Thread.sleep(100);
                 }
 
@@ -863,7 +866,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
     private void PASSO_ESTADO_RECONECTAR() {
         try {
             long IniConexao = 0;
-
+            
             long tempo = System.currentTimeMillis() - inner.TempoInicialPingOnLine;
             if (tempo < TEMPORIZADOR) {
                 return;
@@ -875,11 +878,11 @@ public class EasyInnerCatracaControllerThread extends DAO {
             //form.get(0).getLblStatus().setText("Reconectando ...");
             //logs.save("status_catraca", "SEM CONEXÃO COM A CATRACA");
             int Ret = Enumeradores.Limpar;
-
+            
             IniConexao = System.currentTimeMillis();
             //Realiza loop enquanto o tempo fim for menor que o tempo atual, e o comando retornado diferente de OK.
             do {
-
+                
                 tempo = System.currentTimeMillis() - IniConexao;
                 Thread.sleep(101);
                 Ret = testarConexaoInner();
@@ -911,12 +914,12 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 inner.CountRepeatPingOnline = 0;
                 System.out.println(DataHoje.hora() + ": PING CATRACA 0" + inner.Numero + " >>> RECONECTAR");
             }
-
+            
             if (!EnviaAtualizacao.isCaiu_conexao()) {
                 EnviaAtualizacao.status(inner.ObjectCatraca.getId(), false, "Reconectando");
                 EnviaAtualizacao.enviarAtualizacaoTelaCatraca(inner);
             }
-
+            
         } catch (InterruptedException ex) {
             //System.out.println("Passo Reconectar :  " + ex);
             System.out.println("Exception 13: " + ex.getMessage());
@@ -991,7 +994,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
 
             //Atribui Temporizador
             inner.Temporizador = (int) System.currentTimeMillis();
-
+            
             if (Ret == Enumeradores.RET_COMANDO_OK) {
                 if (inner.EstadoTeclado == Enumeradores.EstadosTeclado.AGUARDANDO_TECLADO) {
                     //****************************************************
@@ -1105,7 +1108,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
             //form.get(0).getLblStatus().setText("Monitorando Giro da Catraca");
             //Declaração de Variáveis..
             int[] Bilhete = new int[8];
-
+            
             StringBuffer Cartao_ = new StringBuffer();
             String NumCartao_ = new String();
 
@@ -1174,7 +1177,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
      * Offline
      */
     private void PASSO_ESTADO_ENVIAR_CONFIGMUD_ONLINE_OFFLINE() {
-
+        
         try {
             String TipoComunicacao = "2"; //boTipoConexao.getSelectedItem().toString();
 
@@ -1194,7 +1197,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
             //Define Mudanças OnLine
             //Função que configura BIT a BIT, Ver no manual Anexo III
             easy_inner_thread.DefinirEntradasMudancaOnLine(ConfiguraEntradasMudancaOnLine());
-
+            
             if (inner.Biometrico) {
                 // Configura entradas mudança OffLine com Biometria
                 Integer r = easy_inner_thread.DefinirEntradasMudancaOffLineComBiometria((inner.Teclado ? Enumeradores.Opcao_SIM : Enumeradores.Opcao_NAO), 3, (byte) (inner.DoisLeitores ? 3 : 0), inner.Verificacao, inner.Identificacao);
@@ -1212,7 +1215,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
 
             //Envia Configurações.
             int Ret = easy_inner_thread.EnviarConfiguracoesMudancaAutomaticaOnLineOffLine(inner.Numero);
-
+            
             if (Ret == Enumeradores.RET_COMANDO_OK) {
                 inner.CountTentativasEnvioComando = 0;
                 inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_COLETAR_BILHETES;
@@ -1241,9 +1244,9 @@ public class EasyInnerCatracaControllerThread extends DAO {
             easy_inner_thread.DefinirMensagemEntradaOffLine(1, "ENTRADA LIBERADA");
             easy_inner_thread.DefinirMensagemSaidaOffLine(1, "SAIDA LIBERADA");
             easy_inner_thread.DefinirMensagemPadraoOffLine(1, "CATRACA OFFLINE");
-
+            
             int Ret = easy_inner_thread.EnviarMensagensOffLine(inner.Numero);
-
+            
             if (Ret == Enumeradores.RET_COMANDO_OK) {
                 inner.CountTentativasEnvioComando = 0;
                 inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_ENVIAR_CONFIGMUD_ONLINE_OFFLINE;
@@ -1270,9 +1273,9 @@ public class EasyInnerCatracaControllerThread extends DAO {
         try {
             if (true == false) {
                 MontarHorarios();
-
+                
                 int Ret = easy_inner_thread.EnviarHorariosAcesso(inner.Numero);
-
+                
                 if (Ret == Enumeradores.RET_COMANDO_OK) {
                     inner.CountTentativasEnvioComando = 0;
                     inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_ENVIAR_USUARIOS_LISTAS;
@@ -1310,7 +1313,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
 
                 inner.TempoInicialMensagem = System.currentTimeMillis();
                 easy_inner_thread.AcionarBipLongo(inner.Numero);
-
+                
                 try {
                     if (inner.ObjectCatraca.getServidor_beep()) {
                         SoundUtils.tone(2500, 400);
@@ -1318,7 +1321,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 } catch (Exception ex) {
                     System.out.println("Exception 25: " + ex.getMessage());
                 }
-
+                
                 Thread.sleep(3000);
 
                 //bloqueiaDados(typInnersCadastrados[numero_inner].Numero, easy_inner_thread, mensagem_bloqueia_dados);
@@ -1337,9 +1340,9 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 //Adiciona 1 ao contador de tentativas
                 inner.CountTentativasEnvioComando++;
             }
-
+            
             EnviaAtualizacao.atualiza_tela(inner);
-
+            
         } catch (Exception ex) {
             System.out.println("Exception 26: " + ex.getMessage());
             inner.EstadoAtual = Enumeradores.EstadosInner.ESTADO_CONECTAR;
@@ -1359,7 +1362,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 //Não utilizar a lista de acesso.
                 easy_inner_thread.DefinirTipoListaAcesso(0);
             }
-
+            
             if (inner.ListaBio) {
                 //Chama rotina que monta o buffer de cartoes que nao irao precisar da digital
 //                MontarBufferListaSemDigital();
@@ -1402,7 +1405,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 LiberaEntrada = false;
             }
         }
-
+        
         if (lado.equals("Saida")) {
             //saída
             if (inner.ObjectCatraca.getLado_giro_catraca().equals("direita")) {
@@ -1414,7 +1417,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
             }
         }
     }
-
+    
     private void LiberaCatraca(RetornoJson json) {
         Integer tipo_leitor = 0; // 0 - CÓDIGO DE BARRAS
         if ((((inner.ObjectCatraca.getTipo_giro_catraca() == Enumeradores.Acionamento_Catraca_Urna)
@@ -1469,7 +1472,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
             inner.EstadoAtual = Enumeradores.EstadosInner.AGUARDA_TEMPO_MENSAGEM;
         }
     }
-
+    
     private boolean LiberaAcessoPelaCatraca() {
 //        Integer numero_via = 0;
 //
@@ -1615,7 +1618,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
         //Arq = new ArquivosDAO();
         List<String> Horarios = new ArrayList();//Arq.LerArquivo(ArquivosDAO.Horarios);
         byte Horario = 0, Dia = 0, faixa = 0, Hora = 0, Minuto = 0;
-
+        
         for (String s : Horarios) {
             if (s.length() > 3) {
                 String[] splitS = s.split(";");
@@ -1624,12 +1627,12 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 faixa = Byte.parseByte(splitS[2]);
                 Hora = Byte.parseByte(splitS[3]);
                 Minuto = Byte.parseByte(splitS[4]);
-
+                
                 easy_inner_thread.InserirHorarioAcesso(Horario, Dia, faixa, Hora, Minuto);
             }
         }
     }
-
+    
     public RetornoJson RetornaPessoaCatraca(Integer pessoa_id, String numero_cartao) {
         // JOptionPane.showMessageDialog(null, "RetornaPessoaCatraca");
         RetornoJson json_webservice;
@@ -1640,10 +1643,10 @@ public class EasyInnerCatracaControllerThread extends DAO {
         }
         return json_webservice;
     }
-
+    
     public RetornoJson RetornaPessoaLiberada() {
         try {
-
+            
             if (!isActive()) {
                 return null;
             }
@@ -1659,20 +1662,20 @@ public class EasyInnerCatracaControllerThread extends DAO {
                         + " FROM vw_catraca_liberada CL \n"
                         + "WHERE CL.numero = " + inner.Numero
                 );
-
+                
                 rs_test.next();
-
+                
                 if (rs_test.getInt("qnt") > 1) {
-
+                    
                     if (!isActive()) {
                         return null;
                     }
                     // query_execute("DELETE FROM soc_catraca_liberada WHERE id_catraca = " + inner.ObjectCatraca.getId());
                     query("SELECT func_catraca_liberada_delete(" + inner.ObjectCatraca.getId() + ")");
                 }
-
+                
                 rs_test.close();
-
+                
                 if (!isActive()) {
                     return null;
                 }
@@ -1689,9 +1692,9 @@ public class EasyInnerCatracaControllerThread extends DAO {
                         + " FROM vw_catraca_liberada CL \n"
                         + "WHERE CL.numero = " + inner.Numero
                 );
-
+                
                 rs.next();
-
+                
                 RetornoJson json_webservice = null;
                 if (rs.getRow() > 0) {
                     if (rs.getObject("pessoa") != null) {
@@ -1699,110 +1702,58 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     } else {
                         json_webservice = EnviaAtualizacao.webservice(rs.getString("cartao"), inner.ObjectCatraca.getDepartamento(), inner.Numero);
                     }
-
+                    
                     if (!isActive()) {
                         return null;
                     }
                     // query_execute("DELETE FROM soc_catraca_liberada WHERE id_catraca = " + inner.ObjectCatraca.getId());
                     query("SELECT func_catraca_liberada_delete(" + inner.ObjectCatraca.getId() + ")");
-
+                    
                     rs.close();
                     return json_webservice;
                 }
             }
-
+            
             if (inner.ObjectCatraca.getVerificacao_de_biometria()) {
-
-                if (!isActive()) {
-                    return null;
-                }
-
+                
                 Conf_Cliente cc = new Conf_Cliente();
                 cc.loadJson();
 
                 // TESTE APENAS - Bruno Vieira Schettini da Silva
+                RetornoJson json_webservice = null;
                 if (cc.getSocket_catraca()) {
-                    String result;
-                    FutureTask<String> theTask = null;
-                    Thread thread = null;
-                    try {
-                        theTask = new FutureTask(new Callable() {
-                            @Override
-                            public Object call() throws Exception {
-                                String result = resultSocket(inner.ObjectCatraca.getSocket_porta());
-                                return result;
-                            }
-
-                        });
-                        thread = new Thread(theTask);
-                        thread.start();
-                        result = theTask.get(500, TimeUnit.MILLISECONDS);
-                        theTask.cancel(true);
-                        try {
-                            thread.interrupt();
-                        } catch (Exception e) {
-
-                        }
-                    } catch (TimeoutException | InterruptedException | ExecutionException ee) {
-                        if (theTask != null) {
-                            theTask.cancel(true);
-                        }
-                        if (thread != null) {
-                            thread.interrupt();
-                        }
-                        result = "";
-                    }
-
-                    JSONObject jSONObject;
-                    RetornoJson json_webservice = null;
-                    if (result != null && !result.isEmpty()) {
-                        try {
-                            jSONObject = new JSONObject(result);
-                            String ip = "";
-                            String codigo = null;
-                            try {
-                                ip = jSONObject.getString("ds_ip");
-                            } catch (Exception e) {
-
-                            }
-                            try {
-                                codigo = jSONObject.getString("id_pessoa");
-                            } catch (Exception e) {
-
-                            }
-                            if (codigo != null && !codigo.isEmpty() && !codigo.equals("null")) {
-                                json_webservice = EnviaAtualizacao.webservice(codigo, inner.ObjectCatraca.getDepartamento(), inner.ObjectCatraca.getSocket_porta());
-                                if (!isActive()) {
-                                    return null;
-                                }
-                                return json_webservice;
-                            }
-                        } catch (JSONException ex) {
-                            Logger.getLogger(EasyInnerCatracaControllerThread.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                    Integer pessoa = Biometria.getIp(inner.ObjectCatraca.getIP());
+                    // -1 Nenhum pedido foi recebido
+                    if (pessoa != -1) {
+                        Debugs.breakPoint("Recebido pedido " + pessoa + " ");
+                        json_webservice = EnviaAtualizacao.webservice(pessoa, inner.ObjectCatraca.getDepartamento(), inner.Numero);
+                        return json_webservice;
                     }
                 } else {
+                    
+                    if (!isActive()) {
+                        return null;
+                    }
+                    
                     ResultSet rs = query(
                             "SELECT pessoa FROM vw_biometria_catraca WHERE ip = '" + inner.ObjectCatraca.getIP() + "'"
                     );
-
+                    
                     rs.next();
-
-                    RetornoJson json_webservice = null;
-
+                    
                     if (rs.getRow() > 0) {
                         if (rs.getObject("pessoa") != null) {
                             json_webservice = EnviaAtualizacao.webservice(rs.getInt("pessoa"), inner.ObjectCatraca.getDepartamento(), inner.Numero);
                         }
-
+                        
                         if (!isActive()) {
                             return null;
                         }
                         //query_execute("DELETE FROM pes_biometria_catraca WHERE ds_ip = '" + inner.ObjectCatraca.getIP() + "'");
                         query("SELECT func_biometria_catraca_delete('" + inner.ObjectCatraca.getIP() + "')");
-
+                        
                         rs.close();
-
+                        
                         return json_webservice;
                     }
                 }
@@ -1838,7 +1789,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
         }
         return null;
     }
-
+    
     public void bloqueiaDados(Integer numero_inner, EasyInner easy_inner_thread, String smensagem) throws InterruptedException {
 
         //atualizaAcessoCatraca(numero_inner, easy_inner_thread, smensagem);
@@ -1854,13 +1805,13 @@ public class EasyInnerCatracaControllerThread extends DAO {
         Thread.sleep(101);
         //enviarAtualizacaoTelaCatraca(numero_inner);
     }
-
+    
     public void mensagemDados(String smensagem) {
         //form.get(0).getLblMensagem().setText(smensagem);
         //form.get(0).getLblImage().setBorder(BorderFactory.createLineBorder(Color.RED, 10));
         //form.get(0).getColorPanel().setBackground(Color.RED);
     }
-
+    
     public ResultSet queryTempoLimite(final String query_string) {
 //        // EXECUTA A QUERY NORMAL ----------------------
 //        ResultSet rs = null;
@@ -1924,10 +1875,10 @@ public class EasyInnerCatracaControllerThread extends DAO {
 //        }
         return null;
     }
-
+    
     public String logErro(int codigo_erro) {
         try {
-
+            
             if (!isActive()) {
                 return "CÓDIGO DE ERRO NÃO ENCONTRADO";
             }
@@ -1936,17 +1887,17 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     + "  FROM soc_catraca_erro ce \n "
                     + " WHERE ce.nr_codigo = " + codigo_erro
             );
-
+            
             rs.next();
-
+            
             return rs.getString("descricao_erro");
-
+            
         } catch (Exception e) {
             System.out.println("Exception 30: " + e.getMessage());
         }
         return "CÓDIGO DE ERRO NÃO ENCONTRADO";
     }
-
+    
     public void liberarCatraca(String nome, String cartao) {
         // NOVO FORM
 //        form.get(0).getLblCodigo().setText(cartao);
@@ -1982,14 +1933,14 @@ public class EasyInnerCatracaControllerThread extends DAO {
             if (!isActive()) {
                 return false;
             }
-
+            
             ResultSet rs = query("SELECT * FROM vw_catraca_biometria  WHERE ativo = true AND enviado = false AND biometria1 <> '' AND biometria2 <> ''");
-
+            
             while (rs.next()) {
                 Integer id_usuario = rs.getInt("id_pessoa");
                 String digital1 = rs.getString("ds_biometria");
                 String digital2 = rs.getString("ds_biometria2");
-
+                
                 byte[] b_template;
                 try {
                     b_template = template404(Integer.toString(id_usuario), digital1, digital2);
@@ -1997,7 +1948,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     System.out.println("Exception 31: " + e.getMessage());
                     return false;
                 }
-
+                
                 easy_inner_thread.EnviarUsuarioBio(inner.Numero, b_template);
                 /*
                  128 – Processando o último comando.  
@@ -2011,11 +1962,11 @@ public class EasyInnerCatracaControllerThread extends DAO {
                  136 – Template inválido.  
                  137 – Parametros inválidos. 
                  */
-
+                
                 int xx2 = easy_inner_thread.UsuarioFoiEnviado(inner.Numero, 0);
                 //System.out.println(xx2);
                 if (xx2 == 0 || xx2 == 131) {
-
+                    
                     if (!isActive()) {
                         return false;
                     }
@@ -2027,22 +1978,22 @@ public class EasyInnerCatracaControllerThread extends DAO {
             if (!isActive()) {
                 return false;
             }
-
+            
             rs = query("SELECT id_pessoa FROM vw_catraca_biometria  WHERE ativo = false AND enviado = true");
-
+            
             Integer r = 0;
             while (rs.next()) {
                 Integer id_usuario = rs.getInt("id_pessoa");
                 r = easy_inner_thread.SolicitarExclusaoUsuario(inner.Numero, EasyInnerUtils.remZeroEsquerda(String.valueOf(id_usuario)));
-
+                
                 Thread.sleep(10);
-
+                
                 Integer tentativas = 0;
                 if (r == Enumeradores.RET_COMANDO_OK) {
                     do {
                         r = easy_inner_thread.UsuarioFoiExcluido(inner.Numero, 0);
                         Thread.sleep(40);
-
+                        
                     } while (r == Enumeradores.RET_BIO_PROCESSANDO && tentativas++ < 10);
                 }
             }
@@ -2050,13 +2001,13 @@ public class EasyInnerCatracaControllerThread extends DAO {
             // EXCLUI USUARIOS DA CATRACA QUE ESTÃO NA MEMÓRIA E NÃO NO BANCO DE DADOS
             //método necessário para a easyinner.dll inicar a coleta do usuários
             easy_inner_thread.InicializarColetaListaUsuariosBio();
-
+            
             do {
                 do {
                     //Solicita uma parte(pacote) da lista de usuarios do bio
                     r = easy_inner_thread.SolicitarListaUsuariosBio(inner.Numero);
                 } while (r == Enumeradores.RET_BIO_PROCESSANDO);
-
+                
                 if (r == Enumeradores.RET_COMANDO_OK) {
                     //Recebe uma parte da lista com os usuarios
                     do {
@@ -2069,45 +2020,45 @@ public class EasyInnerCatracaControllerThread extends DAO {
                         StringBuffer Usuario = new StringBuffer();
                         //Pede um usuario da lista
                         r = easy_inner_thread.ReceberUsuarioLista(inner.Numero, Usuario);
-
+                        
                         if (r == Enumeradores.RET_COMANDO_OK) {
-
+                            
                             if (!isActive()) {
                                 return false;
                             }
-
+                            
                             rs = query("SELECT * FROM vw_catraca_biometria WHERE id_pessoa = " + Integer.valueOf(Usuario.toString()) + " AND ativo = true");
                             r = 0;
                             if (!rs.next()) {
                                 r = easy_inner_thread.SolicitarExclusaoUsuario(inner.Numero, EasyInnerUtils.remZeroEsquerda(Usuario.toString()));
-
+                                
                                 Thread.sleep(10);
-
+                                
                                 Integer tentativas = 0;
                                 if (r == Enumeradores.RET_COMANDO_OK) {
                                     do {
                                         r = easy_inner_thread.UsuarioFoiExcluido(inner.Numero, 0);
                                         Thread.sleep(40);
-
+                                        
                                     } while (r == Enumeradores.RET_BIO_PROCESSANDO && tentativas++ < 10);
                                 }
-
+                                
                             }
                         }
                     }
                 } else {
                     //JOptionPane.showMessageDialog(null, "Erro ao solicitar usuário cadastrado");
                 }
-
+                
                 Thread.sleep(100);
             } while (easy_inner_thread.TemProximoPacote() == 1);
         } catch (SQLException | InterruptedException | NumberFormatException e) {
             System.out.println("Exception 32: " + e.getMessage());
         }
-
+        
         return true;
     }
-
+    
     private byte[] template404(String Cartao, String Digital1, String Digital2) {
         //Template A
         int i = 1;
@@ -2119,22 +2070,22 @@ public class EasyInnerCatracaControllerThread extends DAO {
         byte[] templateTemp = new byte[404];
         //master
         templateFinal[0] = 0;
-
+        
         Cartao = "00000000000".substring(0, 10 - Cartao.length()) + Cartao;
-
+        
         for (j = 0; j < Cartao.length(); j++) {
             templateFinal[i] = (byte) (Long.parseLong(Cartao.substring(j, j + 1)) + 48);
             i++;
         }
-
+        
         i = 28;
         k = 0;
-
+        
         for (j = 0; j < 807; j += 2) {
             templateTemp[k] = (byte) Long.parseLong(Digital1.substring(j, j + 2), 16);
             k++;
         }
-
+        
         for (j = 0; j <= 403; j++) {
             aux = Integer.toString(templateTemp[j] < 0 ? (templateTemp[j] + 256) : templateTemp[j]);
             templateFinal[i] = (byte) Integer.parseInt(aux);
@@ -2144,23 +2095,23 @@ public class EasyInnerCatracaControllerThread extends DAO {
         //Template B
         i = 432;
         k = 0;
-
+        
         for (j = 0; j <= 403; j++) {
             templateTemp[j] = 0;
         }
-
+        
         aux = "";
         for (j = 0; j <= 807; j += 2) {
             templateTemp[k] = (byte) Integer.parseInt(Digital2.substring(j, j + 2), 16);
             k++;
         }
-
+        
         for (j = 0; j <= 403; j++) {
             aux = Integer.toString(templateTemp[j] < 0 ? (templateTemp[j] + 256) : templateTemp[j]);
             templateFinal[i] = (byte) Integer.parseInt(aux);
             i++;
         }
-
+        
         HashMap<String, Object> dataCad = dataCadastro();
         templateFinal[836] = (byte) Integer.parseInt(dataCad.get("yyyy").toString().substring(0, 2));
         templateFinal[837] = (byte) ((int) dataCad.get("yyyy") % 100);
@@ -2170,31 +2121,31 @@ public class EasyInnerCatracaControllerThread extends DAO {
         templateFinal[841] = (byte) (int) dataCad.get("mm");
         templateFinal[842] = (byte) (int) dataCad.get("ss");
         templateFinal[843] = 0;
-
+        
         return templateFinal;
     }
-
+    
     private HashMap<String, Object> dataCadastro() {
         HashMap<String, Object> hashMapData = new HashMap<>();
         Date Data = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy");
         hashMapData.put("yyyy", Integer.parseInt(formatter.format(Data)));
-
+        
         formatter = new SimpleDateFormat("MM");
         hashMapData.put("MM", Integer.parseInt(formatter.format(Data)));
-
+        
         formatter = new SimpleDateFormat("dd");
         hashMapData.put("dd", Integer.parseInt(formatter.format(Data)));
-
+        
         formatter = new SimpleDateFormat("HH");
         hashMapData.put("HH", Integer.parseInt(formatter.format(Data)));
-
+        
         formatter = new SimpleDateFormat("mm");
         hashMapData.put("mm", Integer.parseInt(formatter.format(Data)));
-
+        
         formatter = new SimpleDateFormat("ss");
         hashMapData.put("ss", Integer.parseInt(formatter.format(Data)));
-
+        
         return hashMapData;
     }
 
@@ -2240,22 +2191,22 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     easy_inner_thread.ConfigurarAcionamento1(Enumeradores.ACIONA_REGISTRO_ENTRADA_OU_SAIDA, 5);
                     easy_inner_thread.ConfigurarAcionamento2(Enumeradores.NAO_UTILIZADO, 0);
                     break;
-
+                
                 case Enumeradores.Acionamento_Catraca_Entrada:
                     easy_inner_thread.ConfigurarAcionamento1(Enumeradores.ACIONA_REGISTRO_ENTRADA, 5);
                     easy_inner_thread.ConfigurarAcionamento2(Enumeradores.NAO_UTILIZADO, 0);
                     break;
-
+                
                 case Enumeradores.Acionamento_Catraca_Saida:
                     easy_inner_thread.ConfigurarAcionamento1(Enumeradores.ACIONA_REGISTRO_SAIDA, 5);
                     easy_inner_thread.ConfigurarAcionamento2(Enumeradores.NAO_UTILIZADO, 0);
                     break;
-
+                
                 case Enumeradores.Acionamento_Catraca_Urna:
                     easy_inner_thread.ConfigurarAcionamento1(Enumeradores.ACIONA_REGISTRO_ENTRADA_OU_SAIDA, 5);
                     easy_inner_thread.ConfigurarAcionamento2(Enumeradores.ACIONA_REGISTRO_SAIDA, 5);
                     break;
-
+                
                 case Enumeradores.Acionamento_Catraca_Saida_Liberada:
                     //Se Esquerda Selecionado - Inverte código
                     if (inner.ObjectCatraca.getLado_giro_catraca().equals("esquerda")) {
@@ -2265,7 +2216,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     }
                     easy_inner_thread.ConfigurarAcionamento2(Enumeradores.NAO_UTILIZADO, 0);
                     break;
-
+                
                 case Enumeradores.Acionamento_Catraca_Entrada_Liberada:
                     //Se Esquerda Selecionado - Inverte código
                     if (inner.ObjectCatraca.getLado_giro_catraca().equals("esquerda")) {
@@ -2275,12 +2226,12 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     }
                     easy_inner_thread.ConfigurarAcionamento2(Enumeradores.NAO_UTILIZADO, 0);
                     break;
-
+                
                 case Enumeradores.Acionamento_Catraca_Liberada_2_Sentidos:
                     easy_inner_thread.ConfigurarAcionamento1(Enumeradores.CATRACA_LIBERADA_DOIS_SENTIDOS, 5);
                     easy_inner_thread.ConfigurarAcionamento2(Enumeradores.NAO_UTILIZADO, 0);
                     break;
-
+                
                 case Enumeradores.Acionamento_Catraca_Sentido_Giro:
                     easy_inner_thread.ConfigurarAcionamento1(Enumeradores.CATRACA_LIBERADA_DOIS_SENTIDOS_MARCACAO_REGISTRO, 5);
                     easy_inner_thread.ConfigurarAcionamento2(Enumeradores.NAO_UTILIZADO, 0);
@@ -2305,7 +2256,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     easy_inner_thread.ConfigurarTipoLeitor(Enumeradores.PROXIMIDADE_SMART_CARD);
                     break;
             }
-
+            
             easy_inner_thread.DefinirQuantidadeDigitosCartao(inner.QtdDigitos);
 
             //Habilitar teclado
@@ -2390,7 +2341,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 //Esquerda Selecionado
                 inner.ValorLeitor1 = Enumeradores.ENTRADA_E_SAIDA_INVERTIDAS;
             }
-
+            
             inner.ValorLeitor2 = Enumeradores.DESATIVADO;
         }
     }
@@ -2408,7 +2359,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
         //Solicita a versão do firmware do Inner e dados como o Idioma, se é
         //uma versão especial.
         int Ret = easy_inner_thread.ReceberVersaoFirmware(inner.Numero, Versao);
-
+        
         inner.InnerAcessoBio = Versao[6];
         //Se selecionado Biometria, valida se o equipamento é compatível
         if (inner.ObjectCatraca.getBiometrico()) {
@@ -2416,36 +2367,36 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 //JOptionPane.showMessageDialog(null, "Equipamento " + String.valueOf(typInnersCadastrados[numero_inner].Numero) + " não compatível com Biometria.", "Atenção", JOptionPane.INFORMATION_MESSAGE);
             }
         }
-
+        
         if (Ret == Enumeradores.RET_COMANDO_OK) {
             //Define a linha do Inner
             switch (Versao[0]) {
                 case 1:
                     inner.LinhaInner = "Inner Plus";
                     break;
-
+                
                 case 2:
                     inner.LinhaInner = "Inner Disk";
                     break;
-
+                
                 case 3:
                     inner.LinhaInner = "Inner Verid";
                     break;
-
+                
                 case 6:
                     inner.LinhaInner = "Inner Bio";
                     break;
-
+                
                 case 7:
                     inner.LinhaInner = "Inner NET";
                     break;
-
+                
                 case 14:
                     inner.LinhaInner = "Inner Acesso";
                     inner.InnerNetAcesso = true;
                     break;
             }
-
+            
             inner.VariacaoInner = Variacao;
             inner.VersaoInner = Integer.toString(Versao[3]) + '.' + Integer.toString(Versao[4]) + '.' + Integer.toString(Versao[5]);
 
@@ -2454,7 +2405,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
 
                 //Solicita o modelo do Inner bio.
                 Ret = easy_inner_thread.SolicitarModeloBio(inner.Numero);
-
+                
                 do {
                     //Retorna o resultado do comando SolicitarModeloBio, o modelo
                     //do Inner Bio é retornado por referência no parâmetro da função.
@@ -2498,7 +2449,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
 
                 //Solicita a versão do Inner bio.
                 easy_inner_thread.SolicitarVersaoBio(inner.Numero);
-
+                
                 do {
                     //Retorna o resultado do comando SolicitarVersaoBio, a versão
                     //do Inner Bio é retornado por referência nos parâmetros da
@@ -2524,7 +2475,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
     private void ColetarBilhetesInnerAcesso() throws InterruptedException {
         int[] Bilhete = new int[8];
         StringBuffer Cartao;
-
+        
         int receber[] = new int[2];
 
         //Verifica conexao
@@ -2535,16 +2486,16 @@ public class EasyInnerCatracaControllerThread extends DAO {
             if (QtdeBilhetes > 0) {
                 do {
                     Thread.sleep(100l);
-
+                    
                     Cartao = new StringBuffer();
                     //Coleta um bilhete Off-Line que está armazenado na memória do Inner
                     Ret = easy_inner_thread.ColetarBilhete(inner.Numero, Bilhete, Cartao);
                     if (Ret == Enumeradores.RET_COMANDO_OK) {
                         QtdeBilhetes--;
                     }
-
+                    
                 } while (QtdeBilhetes > 0);
-
+                
                 easy_inner_thread.ReceberQuantidadeBilhetes(inner.Numero, receber);
                 QtdeBilhetes = receber[0];
             }
@@ -2596,7 +2547,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
     private int ConfiguraEntradasMudancaOnLine() {
         //Habilita Teclado
         String Configuracao = (inner.Teclado ? "1" : "0");
-
+        
         if (!inner.Biometrico) {
             //Código de Barras e Proximidade
 
@@ -2614,7 +2565,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                         + //Leitor 1 configurado para Entrada e Saída
                         Configuracao;
             }
-
+            
             Configuracao = "1"
                     + // Habilitado
                     Configuracao;
@@ -2679,68 +2630,68 @@ public class EasyInnerCatracaControllerThread extends DAO {
     private static int BinarioParaDecimal(String valorBinario) {
         int length_bin = 0, aux = 0, retorno = 0, i;
         length_bin = valorBinario.length();
-
+        
         for (i = 0; i < length_bin; i++) {
             aux = Integer.parseInt(valorBinario.substring(i, i + 1));
             retorno += aux * (int) Math.pow(2, (length_bin - i)) / 2;
         }
         return (retorno);
     }
-
+    
     public Inner getInner() {
         return inner;
     }
-
+    
     public void setInner(Inner inner) {
         this.inner = inner;
     }
-
+    
     public class UsuariosBio {
-
+        
         private Integer id;
         private byte[] template;
-
+        
         public UsuariosBio(Integer id, byte[] template) {
             this.id = id;
             this.template = template;
         }
-
+        
         public Integer getId() {
             return id;
         }
-
+        
         public void setId(Integer id) {
             this.id = id;
         }
-
+        
         public byte[] getTemplate() {
             return template;
         }
-
+        
         public void setTemplate(byte[] template) {
             this.template = template;
         }
     }
-
+    
     public class Pessoa {
-
+        
         private Integer id;
         private String nome;
         private String documento;
         private String foto;
-
+        
         public Pessoa(Integer id_pessoa) {
             id = -1;
             nome = "";
             documento = "";
             foto = "";
-
+            
             try {
-
+                
                 if (!isActive()) {
                     return;
                 }
-
+                
                 ResultSet rs = query(
                         "  SELECT p.id AS id, \n "
                         + "       p.ds_nome AS nome, \n "
@@ -2749,60 +2700,60 @@ public class EasyInnerCatracaControllerThread extends DAO {
                         + "  FROM vw_catraca_pessoa \n"
                         + " WHERE p.id = " + id_pessoa
                 );
-
+                
                 rs.next();
-
+                
                 id = rs.getInt("id");
                 nome = rs.getString("nome");
                 documento = rs.getString("documento");
                 foto = rs.getString("foto");
-
+                
             } catch (SQLException e) {
                 System.out.println("Exception 35: " + e.getMessage());
             }
         }
-
+        
         public Integer getId() {
             return id;
         }
-
+        
         public void setId(Integer id) {
             this.id = id;
         }
-
+        
         public String getNome() {
             return nome;
         }
-
+        
         public void setNome(String nome) {
             this.nome = nome;
         }
-
+        
         public String getDocumento() {
             return documento;
         }
-
+        
         public void setDocumento(String documento) {
             this.documento = documento;
         }
-
+        
         public String getFoto() {
             return foto;
         }
-
+        
         public void setFoto(String foto) {
             this.foto = foto;
         }
     }
-
+    
     public Boolean getParar() {
         return Parar;
     }
-
+    
     public void setParar(Boolean Parar) {
         this.Parar = Parar;
     }
-
+    
     public String resultSocket(Integer client_port) {
         Socket socket = null;
         try {
@@ -2826,12 +2777,12 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 try {
                     ip = jSONObject.getString("ds_ip");
                 } catch (Exception e) {
-
+                    
                 }
                 try {
                     codigo = jSONObject.getString("id_pessoa");
                 } catch (Exception e) {
-
+                    
                 }
                 if (fromClient != null && !fromClient.isEmpty()) {
                     //Multiplying the number by 2 and forming the return message
@@ -2852,7 +2803,7 @@ public class EasyInnerCatracaControllerThread extends DAO {
                     bw.flush();
                     return fromClient;
                 }
-
+                
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2864,5 +2815,5 @@ public class EasyInnerCatracaControllerThread extends DAO {
         }
         return null;
     }
-
+    
 }

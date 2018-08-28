@@ -61,8 +61,7 @@ public class CatracaDao extends DAO {
                                 rs.getString("ds_ip"),
                                 rs.getString("ds_mac"),
                                 rs.getInt("nr_servidor"),
-                                true,
-                                rs.getInt("nr_socket_porta")
+                                true
                         )
                 );
             }
@@ -116,8 +115,7 @@ public class CatracaDao extends DAO {
                     rs.getString("ds_ip"),
                     rs.getString("ds_mac"),
                     rs.getInt("nr_servidor"),
-                    true,
-                    rs.getInt("nr_socket_porta")
+                    true
             );
         } catch (SQLException e) {
             e.getMessage();

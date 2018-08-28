@@ -25,9 +25,8 @@ public class Catraca {
     private String IP;
     private String mac;
     private Integer servidor;
-    
+
     private Boolean atualizar;
-    private Integer socket_porta;
 
     public Catraca() {
         this.id = -1;
@@ -49,10 +48,9 @@ public class Catraca {
         this.mac = ""; // MAC DO SERVIDOR
         this.servidor = null;
         this.atualizar = true;
-        this.socket_porta = null;
     }
 
-    public Catraca(Integer id, Integer numero, Integer porta, Integer quantidade_digitos, Boolean bloquear_sem_foto, Integer tipo_giro_catraca, String lado_giro_catraca, Integer departamento, String servidor_foto, Boolean servidor_beep, Boolean biometrico, Boolean leitor_biometrico_externo, Boolean grava_frequencia_catraca, Boolean verificacao_de_biometria, Boolean verificacao_de_liberacao, String cliente, String IP, String mac, Integer servidor, Boolean atualizar, Integer socket_porta) {
+    public Catraca(Integer id, Integer numero, Integer porta, Integer quantidade_digitos, Boolean bloquear_sem_foto, Integer tipo_giro_catraca, String lado_giro_catraca, Integer departamento, String servidor_foto, Boolean servidor_beep, Boolean biometrico, Boolean leitor_biometrico_externo, Boolean grava_frequencia_catraca, Boolean verificacao_de_biometria, Boolean verificacao_de_liberacao, String cliente, String IP, String mac, Integer servidor, Boolean atualizar) {
         this.id = id;
         this.numero = numero;
         this.porta = porta;
@@ -73,7 +71,6 @@ public class Catraca {
         this.mac = mac;
         this.servidor = servidor;
         this.atualizar = atualizar;
-        this.socket_porta = socket_porta;
     }
 
 //    public Catraca get_catraca(Integer numero) {
@@ -84,7 +81,6 @@ public class Catraca {
 //        }
 //        return null;
 //    }
-
     public Integer getId() {
         return id;
     }
@@ -220,7 +216,6 @@ public class Catraca {
 //    public void setLista_catraca(List<Catraca> lista_catraca) {
 //        this.lista_catraca = lista_catraca;
 //    }
-
     public String getCliente() {
         return cliente;
     }
@@ -245,26 +240,12 @@ public class Catraca {
         this.mac = mac;
     }
 
-    /**
-     * @return the servidor
-     */
     public Integer getServidor() {
         return servidor;
     }
 
-    /**
-     * @param servidor the servidor to set
-     */
     public void setServidor(Integer servidor) {
         this.servidor = servidor;
-    }
-
-    public Integer getSocket_porta() {
-        return socket_porta;
-    }
-
-    public void setSocket_porta(Integer socket_porta) {
-        this.socket_porta = socket_porta;
     }
 
 }

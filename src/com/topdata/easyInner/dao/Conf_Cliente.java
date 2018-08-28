@@ -20,6 +20,7 @@ public class Conf_Cliente {
     private String postgres_porta;
     private String servidor_monitor;
     private Boolean socket_catraca;
+    private Integer socket_catraca_porta;
 
     public Conf_Cliente() {
         this.postgres_ip = "";
@@ -30,9 +31,10 @@ public class Conf_Cliente {
         this.postgres_porta = "5432";
         this.servidor_monitor = "";
         this.socket_catraca = false;
+        this.socket_catraca_porta = null;
     }
 
-    public Conf_Cliente(String postgres_ip, String postgres_usuario, String postgres_senha, String postgres_banco, String postgres_cliente, String postgres_porta, String servidor_monitor, Boolean socket_catraca) {
+    public Conf_Cliente(String postgres_ip, String postgres_usuario, String postgres_senha, String postgres_banco, String postgres_cliente, String postgres_porta, String servidor_monitor, Boolean socket_catraca, Integer socket_catraca_porta) {
         this.postgres_ip = postgres_ip;
         this.postgres_usuario = postgres_usuario;
         this.postgres_senha = postgres_senha;
@@ -41,6 +43,7 @@ public class Conf_Cliente {
         this.postgres_porta = postgres_porta;
         this.servidor_monitor = servidor_monitor;
         this.socket_catraca = socket_catraca;
+        this.socket_catraca_porta = socket_catraca_porta;
     }
 
     public String getPostgres_ip() {
@@ -104,7 +107,10 @@ public class Conf_Cliente {
         try {
             File file = new File(path + File.separator + "conf" + File.separator + "configuracao.json");
             if (!file.exists()) {
-                return;
+                file = new File("C:/rtools/catraca/conf/configuracao.json");
+                if (!file.exists()) {
+                    return;                    
+                }
             }
             String json = null;
             try {
@@ -133,6 +139,12 @@ public class Conf_Cliente {
                 this.socket_catraca = false;
             }
 
+            try {
+                this.socket_catraca_porta = jSONObject.getInt("socket_catraca_porta");
+            } catch (JSONException e) {
+                this.socket_catraca_porta = null;
+            }
+
 //            if (this.postgres_senha.isEmpty()) {
 //                if (postgres_banco.equals("Sindical")) {
 //                    this.postgres_senha = "989899";
@@ -151,6 +163,14 @@ public class Conf_Cliente {
 
     public void setSocket_catraca(Boolean socket_catraca) {
         this.socket_catraca = socket_catraca;
+    }
+
+    public Integer getSocket_catraca_porta() {
+        return socket_catraca_porta;
+    }
+
+    public void setSocket_catraca_porta(Integer socket_catraca_porta) {
+        this.socket_catraca_porta = socket_catraca_porta;
     }
 
 }
