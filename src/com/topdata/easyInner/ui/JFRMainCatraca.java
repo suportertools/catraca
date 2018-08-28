@@ -515,7 +515,7 @@ public final class JFRMainCatraca extends JFrame implements ActionListener {
                     } catch (Exception e) {
 
                     }
-                    if (codigo == null || codigo.equals("null") || codigo.isEmpty()) {
+                    if (codigo == null || codigo.equals("null") || codigo.equals("-1") || codigo.isEmpty()) {
                         Biometria.RECEBIDA.put(ip, null);
                     } else {
                         Biometria.RECEBIDA.put(ip, Integer.parseInt(codigo));
