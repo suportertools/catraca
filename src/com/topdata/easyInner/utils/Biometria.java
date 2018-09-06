@@ -25,6 +25,7 @@ public class Biometria {
             for (Map.Entry<String, Integer> entry : RECEBIDA.entrySet()) {
                 if (entry.getKey().equals(comparer)) {
                     Integer value = entry.getValue();
+                    Debugs.breakPoint("getIP: " + value);
                     RECEBIDA.remove(comparer);
                     return value;
                 }
