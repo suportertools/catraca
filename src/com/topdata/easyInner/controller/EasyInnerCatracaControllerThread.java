@@ -1,6 +1,5 @@
 package com.topdata.easyInner.controller;
 
-import com.sun.org.apache.xml.internal.resolver.helpers.Debug;
 import com.topdata.EasyInner;
 import com.topdata.easyInner.dao.Conf_Cliente;
 import com.topdata.easyInner.dao.DAO;
@@ -30,15 +29,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sound.sampled.LineUnavailableException;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class EasyInnerCatracaControllerThread extends DAO {
@@ -1724,6 +1715,10 @@ public class EasyInnerCatracaControllerThread extends DAO {
                 if (cc.getSocket_catraca()) {
                     Integer pessoa = Biometria.getIp(inner.ObjectCatraca.getIP());
                     // -1 Nenhum pedido foi recebido
+                    if (pessoa == null){
+                        return new RetornoJson(null, "NÃO ENCONTRADO", null,  null,  null,  "", null, false);
+                    }
+                    
                     if (pessoa != -1) {
                         Debugs.breakPoint("Recebido pedido " + pessoa + " ");
                         json_webservice = EnviaAtualizacao.webservice(pessoa, inner.ObjectCatraca.getDepartamento(), inner.Numero);
