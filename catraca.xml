@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>\dist\Catraca_v5.jar</jar>
+  <outfile>Catraca_v5.exe</outfile>
+  <errTitle>Erro</errTitle>
+  <cmdLine></cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl>www.rtools.com.br</supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon>favicon.ico</icon>
+  <singleInstance>
+    <mutexName>Catraca Single Instance Mutex : {c96f7db4-d743-4718-bef0-853a3198bcca}</mutexName>
+    <windowTitle>Catraca</windowTitle>
+  </singleInstance>
+  <classPath>
+    <mainClass>com.topdata.easyInner.ui.JFRMainCatraca</mainClass>
+  </classPath>
+  <jre>
+    <path></path>
+    <bundledJre64Bit>false</bundledJre64Bit>
+    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <minVersion>1.7.0</minVersion>
+    <maxVersion>1.8.0</maxVersion>
+    <jdkPreference>preferJdk</jdkPreference>
+    <runtimeBits>32</runtimeBits>
+    <opt>-Djava.library.path=&quot;%systemroot%\\System32\\&quot;</opt>
+  </jre>
+  <splash>
+    <file>slash.bmp</file>
+    <waitForWindow>true</waitForWindow>
+    <timeout>60</timeout>
+    <timeoutErr>true</timeoutErr>
+  </splash>
+  <versionInfo>
+    <fileVersion>1.0.0.1</fileVersion>
+    <txtFileVersion>1.0</txtFileVersion>
+    <fileDescription>Catraca_v5</fileDescription>
+    <copyright>Rtools Comércio de Sistemas Ltda</copyright>
+    <productVersion>1.0.0.1</productVersion>
+    <txtProductVersion>1.0</txtProductVersion>
+    <productName>Catraca_v5</productName>
+    <companyName>Rtools Comércio de Sistemas Ltda</companyName>
+    <internalName>Topdata</internalName>
+    <originalFilename>Catraca_v5.exe</originalFilename>
+  </versionInfo>
+  <messages>
+    <startupErr>Erro ao iniciar a aplicação</startupErr>
+    <bundledJreErr>Este aplicativo foi configurado para usar um Java Runtime Environment, mas o runtime está ausente ou corrompido.</bundledJreErr>
+    <jreVersionErr>Este aplicativo requer um Java Runtime Environment.</jreVersionErr>
+    <launcherErr>O registro se refere a uma instalação Java Runtime Environment não existente ou o tempo de execução está corrompido</launcherErr>
+    <instanceAlreadyExistsMsg>Uma instância do aplicativo já está em execução.</instanceAlreadyExistsMsg>
+  </messages>
+</launch4jConfig>
